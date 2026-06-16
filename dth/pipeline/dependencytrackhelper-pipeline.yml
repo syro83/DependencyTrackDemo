@@ -1,0 +1,212 @@
+# dth/pipeline/dependencytrackhelper-pipeline.yml
+# Builds the DependencyTrackHelper API, pushes the image to ACR, and deploys it as an
+# Azure Container App.
+# Run AFTER the dt app pipeline (which must have written app-outputs.json to the config blob).
+#
+# Reads all deployment inputs from 'foundation-outputs.json' and 'app-outputs.json'
+# in the 'config' blob container of the shared storage account — no manual parameter passing required.
+
+trigger: none
+
+parameters: []
+
+variables:
+  - template: variables/common.yml
+
+jobs:
+  - job: BuildAndDeploy
+    displayName: Build and Deploy DTH API
+    pool:
+      vmImage: $(vmImage)
+
+    steps:
+      - checkout: self
+
+      - task: UseDotNet@2
+        displayName: Install .NET 10 SDK
+        inputs:
+          version: "10.x"
+
+      - task: DotNetCoreCLI@2
+        displayName: Publish DTH API
+        inputs:
+          command: publish
+          publishWebProjects: false
+          projects: "dth/api/DependencyTrackHelper.Api/DependencyTrackHelper.Api.csproj"
+          arguments: "-c Release -o $(Agent.TempDirectory)/dth-publish"
+          zipAfterPublish: false
+          modifyOutputPath: false
+
+      - task: AzureCLI@2
+        name: DthDeploy
+        displayName: Push image and deploy DTH API
+        inputs:
+          azureSubscription: $(azureServiceConnection)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            set -euo pipefail
+
+            deploymentErrorFile="/tmp/dth-deployment-error.log"
+            deploymentName="dth-app-$(Build.BuildId)"
+            imageTag="$(Build.BuildId)"
+
+            print_json_error() {
+              python3 - "$1" "$2" <<'PY'
+            import json
+            import pathlib
+            import sys
+
+            text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8').strip()
+            positions = [pos for pos in (text.find('{'), text.find('[')) if pos != -1]
+            json_start = min(positions) if positions else -1
+
+            if json_start == -1:
+                print(text, file=sys.stderr)
+                raise SystemExit(0)
+
+            prefix = text[:json_start].rstrip()
+            payload = text[json_start:]
+
+            try:
+                parsed = json.loads(payload)
+            except json.JSONDecodeError:
+                print(text, file=sys.stderr)
+            else:
+                if prefix:
+                    print(prefix, file=sys.stderr)
+                else:
+                    print(sys.argv[2], file=sys.stderr)
+                print(json.dumps(parsed, indent=2), file=sys.stderr)
+            PY
+            }
+
+            echo "Resolving storage account in '$(resourceGroupName)'..."
+
+            storageAccountName=$(az resource list \
+              --resource-group "$(resourceGroupName)" \
+              --resource-type Microsoft.Storage/storageAccounts \
+              --query "[0].name" \
+              --output tsv)
+
+            if [ -z "$storageAccountName" ] || [ "$storageAccountName" = "null" ]; then
+              echo "No storage account found in resource group $(resourceGroupName). Run the dt foundation pipeline first." >&2
+              exit 1
+            fi
+
+            storageKey=$(az storage account keys list \
+              --resource-group "$(resourceGroupName)" \
+              --account-name "$storageAccountName" \
+              --query "[0].value" \
+              --output tsv)
+
+            az storage blob download \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name config \
+              --name foundation-outputs.json \
+              --file /tmp/foundation-outputs.json \
+              --output none
+
+            az storage blob download \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name config \
+              --name app-outputs.json \
+              --file /tmp/app-outputs.json \
+              --output none
+
+            baseName=$(jq -r '.baseName' /tmp/foundation-outputs.json)
+            postfix=$(jq -r '.postfix' /tmp/foundation-outputs.json)
+            containerRegistryName=$(jq -r '.containerRegistryName' /tmp/foundation-outputs.json)
+            registryServer=$(jq -r '.containerRegistryServer' /tmp/foundation-outputs.json)
+            dtBackendUrl=$(jq -r '.backendUrl' /tmp/app-outputs.json)
+            dtFrontendUrl=$(jq -r '.frontendUrl' /tmp/app-outputs.json)
+
+            if [ -z "$baseName" ] || [ "$baseName" = "null" ]; then
+              echo "foundation-outputs.json is missing expected values. Re-run the dt foundation pipeline." >&2
+              exit 1
+            fi
+
+            if [ -z "$containerRegistryName" ] || [ "$containerRegistryName" = "null" ] || [ -z "$registryServer" ] || [ "$registryServer" = "null" ]; then
+              echo "foundation-outputs.json is missing container registry values. Re-run the dt foundation pipeline." >&2
+              exit 1
+            fi
+
+            if [ -z "$dtBackendUrl" ] || [ "$dtBackendUrl" = "null" ]; then
+              echo "app-outputs.json is missing expected values. Re-run the dt app pipeline." >&2
+              exit 1
+            fi
+
+            echo "storageAccountName: $storageAccountName"
+            echo "baseName:           $baseName"
+            echo "postfix:            $postfix"
+            echo "containerRegistryName:   $containerRegistryName"
+            echo "containerRegistryServer: $registryServer"
+            echo "dtBackendUrl:       $dtBackendUrl"
+            echo "dtFrontendUrl:      $dtFrontendUrl"
+            echo ""
+
+            # Build the .NET publish output into a container image and push it to ACR.
+            # az acr build runs the build remotely in ACR — no Docker daemon required on the agent.
+            echo "Building and pushing image to $registryServer..."
+
+            az acr build \
+              --registry "$containerRegistryName" \
+              --image "$(containerImageName):$imageTag" \
+              --file "$(Agent.TempDirectory)/dth-publish/Dockerfile.release" \
+              "$(Agent.TempDirectory)/dth-publish/" \
+              --output none
+
+            echo "Image pushed: $registryServer/$(containerImageName):$imageTag"
+            echo ""
+
+            # Retrieve ACR admin credentials for use by the Container App image pull
+            registryUsername=$(az acr credential show \
+              --name "$containerRegistryName" \
+              --query username \
+              --output tsv)
+
+            registryPassword=$(az acr credential show \
+              --name "$containerRegistryName" \
+              --query "passwords[0].value" \
+              --output tsv)
+
+            echo "Deploying DTH API to '$(resourceGroupName)'..."
+
+            if ! az deployment group create \
+              --name "$deploymentName" \
+              --resource-group "$(resourceGroupName)" \
+              --template-file dth/infra/app/main.bicep \
+              --parameters \
+                env="$(environmentName)" \
+                location="$(location)" \
+                baseName="$baseName" \
+                postfix="$postfix" \
+                dtBackendUrl="$dtBackendUrl" \
+                dtFrontendUrl="$dtFrontendUrl" \
+                containerRegistryServer="$registryServer" \
+                containerRegistryUsername="$registryUsername" \
+                containerRegistryPassword="$registryPassword" \
+                containerImageName="$(containerImageName)" \
+                containerImageTag="$imageTag" \
+              --query properties.outputs \
+              --output json > /tmp/dth-deployment-output.json 2> "$deploymentErrorFile"; then
+              print_json_error "$deploymentErrorFile" 'ERROR: DTH API deployment failed.'
+              exit 1
+            fi
+
+            dthApiUrl=$(cat /tmp/dth-deployment-output.json | jq -r '.dthApiUrl.value')
+
+            if [ -z "$dthApiUrl" ] || [ "$dthApiUrl" = "null" ]; then
+              echo "Bicep deployment did not return a DTH API URL." >&2
+              exit 1
+            fi
+
+            echo ""
+            echo "=== DTH API Deployment Complete ==="
+            echo "DTH API URL:  $dthApiUrl"
+            echo "DT Backend:   $dtBackendUrl"
+            echo "DT Frontend:  $dtFrontendUrl"
+
+            echo "##vso[task.setvariable variable=dthApiUrl;isOutput=true]$dthApiUrl"

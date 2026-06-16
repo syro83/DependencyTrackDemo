@@ -1,0 +1,97 @@
+name: demo-application-deploy-$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+  - name: stages
+    displayName: Stages to deploy
+    type: stringList
+    default:
+      - dev
+      - test
+      - acc
+    values:
+      - dev
+      - test
+      - acc
+      - prd
+
+trigger:
+  branches:
+    include:
+      - main
+      - master
+  paths:
+    include:
+      - demo/backend/**
+      - demo/frontend/**
+      - demo/pipeline/application-deployment-pipeline.yml
+      - demo/pipeline/templates/application/**
+      - demo/pipeline/templates/variables/**
+
+pr: none
+
+variables:
+  - template: /demo/pipeline/templates/variables/common.yml
+
+stages:
+  - stage: Build
+    displayName: Build application artifacts
+    jobs:
+      - template: /demo/pipeline/templates/application/build-backend-job.yml
+      - template: /demo/pipeline/templates/application/build-frontend-job.yml
+
+  - ${{ if containsValue(parameters.stages, 'dev') }}:
+    - template: /demo/pipeline/templates/application/deploy-environment-stage.yml
+      parameters:
+        stageName: DeployDevApplication
+        displayName: Dummy deploy dev application
+        environmentName: dev
+        dependsOn:
+          - Build
+
+  - ${{ if containsValue(parameters.stages, 'test') }}:
+    - template: /demo/pipeline/templates/application/deploy-environment-stage.yml
+      parameters:
+        stageName: DeployTestApplication
+        displayName: Dummy deploy test application
+        environmentName: test
+        ${{ if containsValue(parameters.stages, 'dev') }}:
+          dependsOn:
+            - DeployDevApplication
+        ${{ if not(containsValue(parameters.stages, 'dev')) }}:
+          dependsOn:
+            - Build
+
+  - ${{ if containsValue(parameters.stages, 'acc') }}:
+    - template: /demo/pipeline/templates/application/deploy-environment-stage.yml
+      parameters:
+        stageName: DeployAccApplication
+        displayName: Dummy deploy acc application
+        environmentName: acc
+        ${{ if containsValue(parameters.stages, 'test') }}:
+          dependsOn:
+            - DeployTestApplication
+        ${{ if and(not(containsValue(parameters.stages, 'test')), containsValue(parameters.stages, 'dev')) }}:
+          dependsOn:
+            - DeployDevApplication
+        ${{ if and(not(containsValue(parameters.stages, 'test')), not(containsValue(parameters.stages, 'dev'))) }}:
+          dependsOn:
+            - Build
+
+  - ${{ if containsValue(parameters.stages, 'prd') }}:
+    - template: /demo/pipeline/templates/application/deploy-environment-stage.yml
+      parameters:
+        stageName: DeployPrdApplication
+        displayName: Dummy deploy prd application
+        environmentName: prd
+        ${{ if containsValue(parameters.stages, 'acc') }}:
+          dependsOn:
+            - DeployAccApplication
+        ${{ if and(not(containsValue(parameters.stages, 'acc')), containsValue(parameters.stages, 'test')) }}:
+          dependsOn:
+            - DeployTestApplication
+        ${{ if and(not(containsValue(parameters.stages, 'acc')), not(containsValue(parameters.stages, 'test')), containsValue(parameters.stages, 'dev')) }}:
+          dependsOn:
+            - DeployDevApplication
+        ${{ if and(not(containsValue(parameters.stages, 'acc')), not(containsValue(parameters.stages, 'test')), not(containsValue(parameters.stages, 'dev'))) }}:
+          dependsOn:
+            - Build

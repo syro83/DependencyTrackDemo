@@ -1,0 +1,686 @@
+.page {
+  width: min(1100px, 100% - 2rem);
+  margin: 1.25rem auto 2rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* ── City Banner ───────────────────────────────────────────── */
+.city-banner {
+  position: relative;
+  height: min(360px, 46vh);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(26, 51, 77, 0.28);
+  background: #0f172a center / cover no-repeat;
+}
+
+.city-banner--no-data {
+  background-color: #1e293b;
+}
+
+.city-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(7, 18, 34, 0.8), rgba(7, 18, 34, 0.25));
+  z-index: 1;
+}
+
+.city-banner-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1rem, 3vw, 2rem);
+  color: #f8fafc;
+}
+
+.city-name {
+  margin: 0.2rem 0 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: clamp(2.4rem, 6.5vw, 4rem);
+  line-height: 1.1;
+}
+
+.city-banner-content .eyebrow {
+  font-size: 0.95rem;
+}
+
+/* OSM minimap – positioned top-right inside the banner */
+.city-map {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 250px;
+  height: 250px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  z-index: 3;
+}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  height: min(48vh, 512px);
+  max-height: 48vh;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(26, 51, 77, 0.28);
+}
+
+.hero--no-data {
+  background: #dc2626;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(7, 18, 34, 0.85), rgba(7, 18, 34, 0.12));
+  z-index: 1;
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  align-content: center;
+  gap: 0.85rem;
+  padding: clamp(1rem, 3vw, 2.25rem);
+  color: #f8fafc;
+  max-width: 560px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+h1.weather-type {
+  margin: 0.3rem 0 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: clamp(2rem, 6vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.08;
+  opacity: 1;
+}
+
+.hero-tagline {
+  margin: 0.35rem 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  flex-wrap: wrap;
+  opacity: 0.85;
+}
+
+.hero-copy-title {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: clamp(0.85rem, 2vw, 1.05rem);
+  font-weight: 600;
+}
+
+.hero-copy-sep {
+  font-size: clamp(0.85rem, 2vw, 1.05rem);
+  opacity: 0.6;
+  margin: 0 0.2em;
+}
+
+.hero-copy-subtitle {
+  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+  color: #e2e8f0;
+  max-width: 44ch;
+}
+
+.today-weather {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.today-temp-value {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1;
+}
+
+.today-temp-details {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  align-self: flex-end;
+  padding-bottom: 0.3rem;
+}
+
+.today-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+  margin-top: 0.75rem;
+}
+
+.today-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  backdrop-filter: blur(4px);
+}
+
+.today-detail-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.hero-error {
+  color: #06243b;
+  padding: 0.7rem 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.actions button:hover:enabled {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(14, 165, 233, 0.35);
+}
+
+.actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── Outlook Panel ─────────────────────────────────────────── */
+.panel {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 1.1rem;
+}
+
+/* ── Hourly Timeline Panel ─────────────────────────────────── */
+.hourly-panel {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 1.1rem;
+}
+
+.hourly-track {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.hourly-nav {
+  flex: 0 0 auto;
+  width: 2rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms;
+  padding: 0;
+  user-select: none;
+}
+
+.hourly-nav:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.hourly-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.hourly-scroll {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0.4rem;
+}
+
+.hourly-slot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 0.55rem 0.65rem;
+  min-width: 62px;
+}
+
+.hourly-time {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.7rem;
+  color: #475569;
+  letter-spacing: 0.04em;
+}
+
+.hourly-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.hourly-temp {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0b5b88;
+}
+
+.hourly-rain,
+.hourly-wind {
+  font-size: 0.68rem;
+  color: #334155;
+  white-space: nowrap;
+}
+
+
+.meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.outlook-heading {
+  margin: 0.9rem 0 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cards {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.card {
+  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 0.8rem;
+  animation: popIn 300ms ease both;
+}
+
+.card-weather-img {
+  display: none;
+}
+
+.card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.card-detail-item {
+  font-size: 0.78rem;
+  color: #334155;
+}
+
+.day {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.card h2 {
+  margin: 0.25rem 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.temp {
+  margin: 0;
+  color: #0b5b88;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.temp-f {
+  margin: 0.1rem 0 0;
+  color: #475569;
+  font-size: 0.8rem;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── City Selector (inside banner) ────────────────────────── */
+.city-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.85rem;
+}
+
+.city-selector select {
+  flex: 1;
+  min-width: 180px;
+  max-width: 420px;
+  padding: 0.5rem 2.2rem 0.5rem 0.9rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #e2e8f0;
+  background: #1e293b;
+  border: 1.5px solid #334155;
+  border-radius: 10px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.city-selector select option {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.city-selector select:focus {
+  outline: none;
+  border-color: #64748b;
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.3);
+}
+
+.city-selector select:hover {
+  border-color: #475569;
+}
+
+.city-selector button {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: #334155;
+  border: 1.5px solid #475569;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.city-selector button:hover:not(:disabled) {
+  background: #475569;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
+
+.city-selector button:active:not(:disabled) {
+  background: #1e293b;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.city-selector button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: min(1100px, 100% - 1rem);
+    margin-top: 0.7rem;
+  }
+
+  .city-map {
+    width: 188px;
+    height: 188px;
+  }
+}
+
+
+.hero {
+  position: relative;
+  height: min(64vh, 688px);
+  max-height: 64vh;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(26, 51, 77, 0.28);
+}
+
+.hero--no-data {
+  background: #dc2626;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  max-height: 64vh;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, rgba(7, 18, 34, 0.85), rgba(7, 18, 34, 0.12));
+  z-index: 1;
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  align-content: center;
+  gap: 0.85rem;
+  padding: clamp(1rem, 3vw, 2.25rem);
+  color: #f8fafc;
+  max-width: 560px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: clamp(2rem, 6vw, 3.6rem);
+  line-height: 1.08;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 44ch;
+  color: #e2e8f0;
+}
+
+.today-weather {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.today-temp-value {
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1;
+}
+
+.actions button {
+  border: 0;
+  border-radius: 999px;
+  background: #0ea5e9;
+  color: #06243b;
+  padding: 0.7rem 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.actions button:hover:enabled {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(14, 165, 233, 0.35);
+}
+
+.actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 1.1rem;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.outlook-heading {
+  margin: 0.9rem 0 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.error {
+  margin: 0.9rem 0 0;
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem;
+  border-radius: 10px;
+}
+
+.cards {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.card {
+  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 0.8rem;
+  animation: popIn 300ms ease both;
+}
+
+.day {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.card h2 {
+  margin: 0.25rem 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 1.2rem;
+  color: #0f172a;
+}
+
+.temp {
+  margin: 0;
+  color: #0b5b88;
+  font-weight: 600;
+}
+
+.weather-shot {
+  margin-top: 1rem;
+}
+
+.weather-shot h2 {
+  margin: 0;
+  font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+  font-size: 1.35rem;
+  color: #0f172a;
+}
+
+.weather-shot img {
+  margin-top: 0.7rem;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: min(1100px, 100% - 1rem);
+    margin-top: 0.7rem;
+  }
+}

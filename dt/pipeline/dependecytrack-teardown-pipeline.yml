@@ -1,0 +1,152 @@
+# dt/pipeline/dependecytrack-teardown-pipeline.yml
+# Teardown pipeline: removes all Dependency-Track resources from the resource group,
+# except the Storage Account (which holds the pipeline coordination blobs and
+# the Azure Files vulnerability-data share).
+#
+# Run this pipeline when you are done with a demo environment and want to clean up
+# Azure resources without deleting the resource group itself.
+#
+# To remove everything including the Storage Account, delete the resource group
+# manually in the Azure portal or with:
+#   az group delete --name rg-dependecytrack-app --yes
+
+trigger: none
+
+parameters: []
+
+variables:
+  - template: variables/common.yml
+
+jobs:
+  - job: TeardownResources
+    displayName: Remove resources from $(resourceGroupName)
+    pool:
+      vmImage: $(vmImage)
+
+    steps:
+      - task: AzureCLI@2
+        displayName: Delete resources in $(resourceGroupName)
+        inputs:
+          azureSubscription: $(azureServiceConnection)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            set -euo pipefail
+
+            # Resource types that are NOT removed during teardown.
+            # These resources hold shared state and are preserved between deployments.
+            excluded_types=(
+              "Microsoft.Storage/storageAccounts"    # Holds pipeline coordination blobs and the Azure Files vulnerability-data share
+            )
+
+            max_attempts=7
+
+            echo "Fetching resources in resource group '$(resourceGroupName)'..."
+
+            all_resources=$(az resource list \
+              --resource-group "$(resourceGroupName)" \
+              --output json)
+
+            resource_count=$(echo "$all_resources" | jq 'length')
+            echo "Found $resource_count resource(s) in total."
+
+            echo ""
+            echo "All resources in the group:"
+            echo "$all_resources" | jq -r '.[] | "  \(.name)  (\(.id))"'
+
+            excluded_json=$(printf '%s\n' "${excluded_types[@]}" | jq -R . | jq -s .)
+
+            preserved=$(echo "$all_resources" | jq -c \
+              --argjson excluded "$excluded_json" \
+              '[.[] | select(.type | IN($excluded[]))]')
+            preserved_count=$(echo "$preserved" | jq 'length')
+
+            if [ "$preserved_count" -gt 0 ]; then
+              echo ""
+              echo "Preserving the following resources (not deleted):"
+              echo "$preserved" | jq -r '.[] | "  - \(.type): \(.name)  (\(.id))"'
+            fi
+
+            # Some resource types require a type-specific CLI command when the generic delete is rejected.
+            try_type_specific_delete() {
+              local res_name="$1"
+              local res_type="$2"
+              case "$res_type" in
+                Microsoft.Web/staticSites)
+                  az staticwebapp delete \
+                    --name "$res_name" \
+                    --resource-group "$(resourceGroupName)" \
+                    --yes 2>/tmp/delete-error.log
+                  ;;
+                *)
+                  return 1
+                  ;;
+              esac
+            }
+
+            # Build the initial list of resources to delete as "id<TAB>name<TAB>type" triples (exclusions already applied).
+            mapfile -t remaining_resources < <(echo "$all_resources" | jq -r \
+              --argjson excluded "$excluded_json" \
+              '[.[] | select(.type | IN($excluded[]) | not)] | .[] | "\(.id)\t\(.name)\t\(.type)"')
+
+            if [ "${#remaining_resources[@]}" -eq 0 ]; then
+              echo ""
+              echo "No resources to delete."
+              exit 0
+            fi
+
+            attempt=0
+            while [ "${#remaining_resources[@]}" -gt 0 ] && [ "$attempt" -lt "$max_attempts" ]; do
+              attempt=$(( attempt + 1 ))
+              echo ""
+              echo "--- Attempt $attempt / $max_attempts ---"
+              echo "Attempting to delete ${#remaining_resources[@]} resource(s):"
+              for resource_entry in "${remaining_resources[@]}"; do
+                r_id="${resource_entry%%$'\t'*}"
+                r_rest="${resource_entry#*$'\t'}"
+                r_name="${r_rest%%$'\t'*}"
+                echo "  $r_name  ($r_id)"
+              done
+              echo ""
+
+              failed_resources=()
+              for resource_entry in "${remaining_resources[@]}"; do
+                resource_id="${resource_entry%%$'\t'*}"
+                resource_rest="${resource_entry#*$'\t'}"
+                resource_name="${resource_rest%%$'\t'*}"
+                resource_type="${resource_rest#*$'\t'}"
+                if az resource delete --ids "$resource_id" --verbose 2>/tmp/delete-error.log; then
+                  echo "  Deleted: $resource_name  ($resource_id)"
+                elif try_type_specific_delete "$resource_name" "$resource_type"; then
+                  echo "  Deleted (fallback): $resource_name  ($resource_id)"
+                else
+                  error_msg=$(cat /tmp/delete-error.log)
+                  echo "  Skipped: $resource_name  ($resource_id) (will retry)"
+                  echo "$error_msg" | head -3 | sed 's/^/    /'
+                  failed_resources+=("$resource_entry")
+                fi
+              done
+
+              remaining_resources=("${failed_resources[@]}")
+
+              if [ "${#remaining_resources[@]}" -gt 0 ] && [ "$attempt" -lt "$max_attempts" ]; then
+                echo ""
+                echo "Waiting 5 seconds before retrying..."
+                sleep 5
+              fi
+            done
+
+            echo ""
+            if [ "${#remaining_resources[@]}" -gt 0 ]; then
+              echo "##[error] Teardown failed: ${#remaining_resources[@]} resource(s) could not be deleted after $max_attempts attempt(s):"
+              for resource_entry in "${remaining_resources[@]}"; do
+                r_id="${resource_entry%%$'\t'*}"
+                r_name="${resource_entry#*$'\t'}"
+                echo "  $r_name  ($r_id)"
+              done
+              exit 1
+            fi
+
+            echo "Teardown of '$(resourceGroupName)' complete."
+            echo "The Storage Account and its blobs and Azure Files share were preserved."
+            echo "To redeploy, run the data and app pipelines — no parameters required."

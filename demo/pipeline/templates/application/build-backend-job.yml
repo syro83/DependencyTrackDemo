@@ -1,0 +1,44 @@
+jobs:
+  - job: BuildBackend
+    displayName: Build backend API
+    pool:
+      vmImage: $(vmImage)
+    steps:
+      - checkout: self
+
+      - task: UseDotNet@2
+        displayName: Install .NET SDK
+        inputs:
+          packageType: sdk
+          version: 10.x
+
+      - task: DotNetCoreCLI@2
+        displayName: Restore backend dependencies
+        inputs:
+          command: restore
+          projects: $(backendProjectFile)
+
+      - task: DotNetCoreCLI@2
+        displayName: Build backend API
+        inputs:
+          command: build
+          projects: $(backendProjectFile)
+          arguments: --configuration $(buildConfiguration) --no-restore
+
+      - script: dotnet publish $(backendProjectFile) --configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/backend/publish
+        displayName: Publish backend API
+
+      - task: ArchiveFiles@2
+        displayName: Archive backend deployment package
+        inputs:
+          rootFolderOrFile: $(Build.ArtifactStagingDirectory)/backend/publish
+          includeRootFolder: false
+          archiveType: zip
+          archiveFile: $(Build.ArtifactStagingDirectory)/backend/$(backendPackageFileName)
+          replaceExistingArchive: true
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish backend artifact
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)/backend/$(backendPackageFileName)
+          artifact: $(backendArtifactName)

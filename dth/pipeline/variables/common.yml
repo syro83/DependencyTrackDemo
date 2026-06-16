@@ -1,0 +1,13 @@
+variables:
+  - name: environmentName
+    value: dev
+  - name: azureServiceConnection
+    value: sc-dependecytrack
+  - name: resourceGroupName
+    value: rg-dependecytrack
+  - name: location
+    value: northeurope
+  - name: vmImage
+    value: ubuntu-latest
+  - name: containerImageName
+    value: dth-api

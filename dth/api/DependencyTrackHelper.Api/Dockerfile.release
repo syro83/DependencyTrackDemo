@@ -1,0 +1,11 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+ADD . app
+WORKDIR /app
+EXPOSE 8080
+
+RUN apt update \
+    && apt-get -y upgrade \
+    && apt-get -yq install wget \
+    && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["dotnet", "DependencyTrackHelper.Api.dll"]

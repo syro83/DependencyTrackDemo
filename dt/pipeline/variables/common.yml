@@ -1,0 +1,22 @@
+variables:
+  - name: environmentName
+    value: dev
+  - name: azureServiceConnection
+    value: sc-dependecytrack
+  - name: resourceGroupName
+    value: rg-dependecytrack
+  - name: location
+    value: northeurope
+  - name: vmImage
+    value: ubuntu-latest
+  - name: dbAdminUser
+    value: dtadmin
+  - name: backendImage
+    value: dependencytrack/apiserver
+  - name: backendImageTag
+    value: latest
+  - name: frontendImage
+    value: dependencytrack/frontend
+  - name: frontendImageTag
+    value: latest
+  - group: DependecyTrackSecrets
