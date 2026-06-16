@@ -1,0 +1,142 @@
+# dt/pipeline/dependecytrack-foundation-pipeline.yml
+# Foundation pipeline: deploys storage, VNet, and the naming postfix.
+# Run this FIRST.
+#
+# After deployment, outputs are written to 'foundation-outputs.json' in the 'config'
+# blob container of the created storage account. The data and app pipelines read from
+# there automatically — no manual parameter passing required.
+
+trigger: none
+
+parameters: []
+
+variables:
+  - template: variables/common.yml
+
+jobs:
+  - job: DeployFoundation
+    displayName: Deploy Foundation Layer
+    pool:
+      vmImage: $(vmImage)
+
+    steps:
+      - checkout: self
+
+      - task: AzureCLI@2
+        name: FoundationDeploy
+        displayName: Deploy foundation/main.bicep
+        inputs:
+          azureSubscription: $(azureServiceConnection)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            set -euo pipefail
+
+            deploymentErrorFile="/tmp/foundation-deployment-error.log"
+            deploymentName="dt-foundation-$(Build.BuildId)"
+
+            print_json_error() {
+              python3 - "$1" "$2" <<'PY'
+            import json
+            import pathlib
+            import sys
+
+            text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8').strip()
+            positions = [pos for pos in (text.find('{'), text.find('[')) if pos != -1]
+            json_start = min(positions) if positions else -1
+
+            if json_start == -1:
+                print(text, file=sys.stderr)
+                raise SystemExit(0)
+
+            prefix = text[:json_start].rstrip()
+            payload = text[json_start:]
+
+            try:
+                parsed = json.loads(payload)
+            except json.JSONDecodeError:
+                print(text, file=sys.stderr)
+            else:
+                if prefix:
+                    print(prefix, file=sys.stderr)
+                else:
+                    print(sys.argv[2], file=sys.stderr)
+                print(json.dumps(parsed, indent=2), file=sys.stderr)
+            PY
+            }
+
+            echo "Deploying foundation layer to '$(resourceGroupName)'..."
+
+            if ! az deployment group create \
+              --name "$deploymentName" \
+              --resource-group "$(resourceGroupName)" \
+              --template-file dt/infra/foundation/main.bicep \
+              --parameters \
+                env="$(environmentName)" \
+                location="$(location)" \
+              --query properties.outputs \
+              --output json > /tmp/foundation-deployment-output.json 2> "$deploymentErrorFile"; then
+              print_json_error "$deploymentErrorFile" 'ERROR: foundation deployment failed.'
+              exit 1
+            fi
+
+            output=$(cat /tmp/foundation-deployment-output.json)
+
+            postfix=$(echo "$output"               | jq -r '.postfix.value')
+            baseName=$(echo "$output"              | jq -r '.baseName.value')
+            storageAccountName=$(echo "$output"   | jq -r '.storageAccountName.value')
+            configContainerName=$(echo "$output"  | jq -r '.configContainerName.value')
+            vnetId=$(echo "$output"               | jq -r '.vnetId.value')
+            containerSubnetId=$(echo "$output"    | jq -r '.containerSubnetId.value')
+            dbSubnetId=$(echo "$output"           | jq -r '.dbSubnetId.value')
+            containerRegistryName=$(echo "$output"   | jq -r '.containerRegistryName.value')
+            containerRegistryServer=$(echo "$output" | jq -r '.containerRegistryServer.value')
+
+            if [ -z "$storageAccountName" ] || [ "$storageAccountName" = "null" ]; then
+              echo "Bicep deployment did not return a storage account name." >&2
+              exit 1
+            fi
+
+            echo ""
+            echo "=== Foundation Outputs ==="
+            echo "postfix:            $postfix"
+            echo "baseName:           $baseName"
+            echo "storageAccountName: $storageAccountName"
+            echo "configContainerName:$configContainerName"
+            echo "vnetId:             $vnetId"
+            echo "containerSubnetId:  $containerSubnetId"
+            echo "dbSubnetId:         $dbSubnetId"
+            echo "containerRegistryName:   $containerRegistryName"
+            echo "containerRegistryServer: $containerRegistryServer"
+
+            # Write outputs to blob storage so downstream pipelines can read them without manual parameters
+            storageKey=$(az storage account keys list \
+              --resource-group "$(resourceGroupName)" \
+              --account-name "$storageAccountName" \
+              --query "[0].value" \
+              --output tsv)
+
+            jq -n \
+              --arg postfix "$postfix" \
+              --arg baseName "$baseName" \
+              --arg storageAccountName "$storageAccountName" \
+              --arg vnetId "$vnetId" \
+              --arg containerSubnetId "$containerSubnetId" \
+              --arg dbSubnetId "$dbSubnetId" \
+              --arg containerRegistryName "$containerRegistryName" \
+              --arg containerRegistryServer "$containerRegistryServer" \
+              '{postfix: $postfix, baseName: $baseName, storageAccountName: $storageAccountName, vnetId: $vnetId, containerSubnetId: $containerSubnetId, dbSubnetId: $dbSubnetId, containerRegistryName: $containerRegistryName, containerRegistryServer: $containerRegistryServer}' \
+              > /tmp/foundation-outputs.json
+
+            az storage blob upload \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name "$configContainerName" \
+              --name foundation-outputs.json \
+              --file /tmp/foundation-outputs.json \
+              --overwrite \
+              --output none
+
+            echo ""
+            echo "Foundation outputs written to blob: $configContainerName/foundation-outputs.json"
+            echo "Run the data pipeline next — no parameters required."

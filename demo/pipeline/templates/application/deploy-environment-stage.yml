@@ -1,0 +1,34 @@
+parameters:
+  - name: stageName
+    type: string
+  - name: displayName
+    type: string
+  - name: environmentName
+    type: string
+  - name: dependsOn
+    type: object
+    default: []
+
+stages:
+  - stage: ${{ parameters.stageName }}
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: DummyDeploy
+        displayName: Confirm build artifacts for ${{ parameters.environmentName }}
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - download: current
+            artifact: $(backendArtifactName)
+
+          - download: current
+            artifact: $(frontendArtifactName)
+
+          - script: |
+              echo "Azure deployment has been removed from this tutorial demo."
+              echo "Environment stage: ${{ parameters.environmentName }}"
+              echo "Backend artifact: $(Pipeline.Workspace)/$(backendArtifactName)/$(backendPackageFileName)"
+              echo "Frontend artifact: $(Pipeline.Workspace)/$(frontendArtifactName)"
+            displayName: Run dummy deployment step

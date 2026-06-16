@@ -1,0 +1,8 @@
+variables:
+  vmImage: ubuntu-latest
+  buildConfiguration: Release
+  backendProjectFile: demo/backend/WeatherApiService.Api/WeatherApiService.Api.csproj
+  frontendWorkingDirectory: demo/frontend
+  backendArtifactName: backend-package
+  frontendArtifactName: frontend-dist
+  backendPackageFileName: WeatherApiService.Api.zip

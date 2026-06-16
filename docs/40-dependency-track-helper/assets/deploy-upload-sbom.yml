@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Purpose:
+#   Upload the sbom to DependencyTrack (DT) and call the helper API is called for Dependency-Track project lifecycle operations.
+#
+# Requirements:
+#   The pipeline must provide dependencyTrackUrl, dependencyTrackHelperUrl and dependencyTrackApiKey, for
+#   example through a variable group such as DependencyTrackGroup.
+#
+# Steps:
+#   1. Download artifact containing the SBOM generated in the build stage for each application component.
+#      - The SBOM is expected to be in the root of the artifact and named bom
+#   2. Upload the SBOM to Dependency-Track via the REST API.
+#      - The version is set to the pipeline build number so every build creates a versioned
+#        snapshot in Dependency-Track.
+#   3. Call the Dependency-Track Helper API to do the activation and cleaning of the projects
+#      - The pipeline version becomes active/latest.
+#      - Parent project are created and the relation is created.
+#      - Older versions are deactivated and optionally pruned.
+# ─────────────────────────────────────────────────────────────────────────────
+
+parameters:
+  - name: environmentName
+    type: string
+  - name: applicationName
+    type: string
+  - name: applicationComponentNames
+    type: object
+    default: []
+
+steps:
+  - ${{ each applicationComponentName in parameters.applicationComponentNames }}:
+      # Download the SBOM artifact published by the build job for this application component.
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: "current"
+          artifactName: "sbom-${{ applicationComponentName }}"
+          targetPath: "$(Pipeline.Workspace)/sbom-${{ applicationComponentName }}"
+        displayName: "Download SBOM artifact - ${{ applicationComponentName }}"
+
+      # Upload the SBOM to Dependency-Track via the REST API.
+      # Then call the Dependency-Track Helper API to do the activation and cleaning of the projects
+      - script: |
+          SBOM_PATH="$(Pipeline.Workspace)/sbom-${{ applicationComponentName }}/bom.json"
+          if [ -f "$SBOM_PATH" ]; then
+            echo "SBOM found at $SBOM_PATH"
+          else
+            echo "SBOM not found at $SBOM_PATH"
+            exit 1
+          fi
+
+          HTTP_STATUS=$(curl -X POST "$(dependencyTrackUrl)/api/v1/bom" \
+              -H "X-Api-Key: $(dependencyTrackApiKey)" \
+              -H 'Content-Type: multipart/form-data' \
+              -F 'projectName="${{ parameters.applicationName }}-${{ applicationComponentName }}"' \
+              -F 'projectVersion="$(Build.BuildNumber)"' \
+              -F 'autoCreate=true' \
+              -F 'bom=@$(Pipeline.Workspace)/sbom-${{ applicationComponentName }}/bom.json' \
+              -w '%{response_code}' \
+              -v --ssl-no-revoke)
+
+          echo "Dependency-Track response (HTTP ${HTTP_STATUS})"
+
+          HTTP_STATUS=$(curl -X POST "$(dependencyTrackHelperUrl)/api/v1/projectprocess" \
+            -H "X-Api-Key: $(dependencyTrackApiKey)" \
+              -H 'Content-Type: application/json' \
+              -d '{
+                    "projectName": "${{ parameters.applicationName }}-${{ applicationComponentName }}",
+                    "version": "$(Build.BuildNumber)",
+                    "activateVersion": true,
+                    "cleanInactiveProjects": 3,
+                    "parentName": "${{ parameters.applicationName }}"
+                  }' \
+              -w '%{response_code}' \
+              -v --ssl-no-revoke)
+
+          echo "Dependency-Track Helper response (HTTP ${HTTP_STATUS})"
+        displayName: "Upload SBOM to Dependency-Track"
+        continueOnError: true

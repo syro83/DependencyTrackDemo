@@ -1,0 +1,26 @@
+jobs:
+  - job: BuildFrontend
+    displayName: Build frontend SPA
+    pool:
+      vmImage: $(vmImage)
+    steps:
+      - checkout: self
+
+      - task: NodeTool@0
+        displayName: Install Node.js
+        inputs:
+          versionSpec: 22.x
+
+      - script: npm ci
+        displayName: Install frontend dependencies
+        workingDirectory: $(frontendWorkingDirectory)
+
+      - script: npm run build
+        displayName: Build frontend SPA
+        workingDirectory: $(frontendWorkingDirectory)
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish frontend artifact
+        inputs:
+          targetPath: $(Build.SourcesDirectory)/demo/frontend/dist
+          artifact: $(frontendArtifactName)

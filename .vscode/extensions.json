@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "anthropic.claude-code",
+    "ms-dotnettools.csdevkit",
+    "ms-dotnettools.csharp",
+    "ms-azuretools.vscode-bicep",
+    "ms-azure-devops.azure-pipelines",
+    "editorconfig.editorconfig",
+    "humao.rest-client",
+    "davidanson.vscode-markdownlint",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-mermaid",
+    "shd101wyy.markdown-preview-enhanced",
+    "ms-vscode.powershell",
+    "emojisense.emojisense",
+  ]
+}

@@ -1,0 +1,190 @@
+# dt/pipeline/dependecytrack-app-pipeline.yml
+# App pipeline: deploys Dependency-Track as Azure Container Apps (API server + frontend).
+# Run AFTER the foundation and data pipelines.
+#
+# Reads all deployment inputs from 'foundation-outputs.json' and 'data-outputs.json'
+# in the 'config' blob container — no manual parameter passing required.
+
+trigger: none
+
+parameters: []
+
+variables:
+  - template: variables/common.yml
+
+jobs:
+  - job: DeployApp
+    displayName: Deploy App Layer
+    pool:
+      vmImage: $(vmImage)
+
+    steps:
+      - checkout: self
+
+      - task: AzureCLI@2
+        name: AppDeploy
+        displayName: Deploy app/main.bicep
+        # Map the password to an env var so it is never expanded inline in the script
+        env:
+          DB_ADMIN_PASSWORD: $(dbAdminPassword)
+        inputs:
+          azureSubscription: $(azureServiceConnection)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            set -euo pipefail
+
+            deploymentErrorFile="/tmp/app-deployment-error.log"
+            deploymentName="dt-app-$(Build.BuildId)"
+
+            print_json_error() {
+              python3 - "$1" "$2" <<'PY'
+            import json
+            import pathlib
+            import sys
+
+            text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8').strip()
+            positions = [pos for pos in (text.find('{'), text.find('[')) if pos != -1]
+            json_start = min(positions) if positions else -1
+
+            if json_start == -1:
+                print(text, file=sys.stderr)
+                raise SystemExit(0)
+
+            prefix = text[:json_start].rstrip()
+            payload = text[json_start:]
+
+            try:
+                parsed = json.loads(payload)
+            except json.JSONDecodeError:
+                print(text, file=sys.stderr)
+            else:
+                if prefix:
+                    print(prefix, file=sys.stderr)
+                else:
+                    print(sys.argv[2], file=sys.stderr)
+                print(json.dumps(parsed, indent=2), file=sys.stderr)
+            PY
+            }
+
+            echo "Resolving storage account in '$(resourceGroupName)'..."
+
+            storageAccountName=$(az resource list \
+              --resource-group "$(resourceGroupName)" \
+              --resource-type Microsoft.Storage/storageAccounts \
+              --query "[0].name" \
+              --output tsv)
+
+            if [ -z "$storageAccountName" ] || [ "$storageAccountName" = "null" ]; then
+              echo "No storage account found in resource group $(resourceGroupName). Run the foundation pipeline first." >&2
+              exit 1
+            fi
+
+            storageKey=$(az storage account keys list \
+              --resource-group "$(resourceGroupName)" \
+              --account-name "$storageAccountName" \
+              --query "[0].value" \
+              --output tsv)
+
+            az storage blob download \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name config \
+              --name foundation-outputs.json \
+              --file /tmp/foundation-outputs.json \
+              --output none
+
+            az storage blob download \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name config \
+              --name data-outputs.json \
+              --file /tmp/data-outputs.json \
+              --output none
+
+            baseName=$(jq -r '.baseName' /tmp/foundation-outputs.json)
+            postfix=$(jq -r '.postfix' /tmp/foundation-outputs.json)
+            containerSubnetId=$(jq -r '.containerSubnetId' /tmp/foundation-outputs.json)
+            dbUrl=$(jq -r '.dbUrl' /tmp/data-outputs.json)
+            vulnerabilityShareName=$(jq -r '.vulnerabilityShareName' /tmp/data-outputs.json)
+
+            if [ -z "$baseName" ] || [ "$baseName" = "null" ]; then
+              echo "foundation-outputs.json is missing expected values. Re-run the foundation pipeline." >&2
+              exit 1
+            fi
+
+            if [ -z "$dbUrl" ] || [ "$dbUrl" = "null" ]; then
+              echo "data-outputs.json is missing expected values. Re-run the data pipeline." >&2
+              exit 1
+            fi
+
+            echo "storageAccountName:    $storageAccountName"
+            echo "baseName:              $baseName"
+            echo "postfix:               $postfix"
+            echo "containerSubnetId:     $containerSubnetId"
+            echo "dbUrl:                 $dbUrl"
+            echo "vulnerabilityShareName:$vulnerabilityShareName"
+            echo ""
+            echo "Deploying app layer to '$(resourceGroupName)'..."
+
+            if ! az deployment group create \
+              --name "$deploymentName" \
+              --resource-group "$(resourceGroupName)" \
+              --template-file dt/infra/app/main.bicep \
+              --parameters \
+                env="$(environmentName)" \
+                location="$(location)" \
+                baseName="$baseName" \
+                postfix="$postfix" \
+                storageAccountName="$storageAccountName" \
+                containerSubnetId="$containerSubnetId" \
+                vulnerabilityShareName="$vulnerabilityShareName" \
+                dbUrl="$dbUrl" \
+                dbAdminUser="$(dbAdminUser)" \
+                dbAdminPassword="$DB_ADMIN_PASSWORD" \
+                backendImage="$(backendImage)" \
+                backendImageTag="$(backendImageTag)" \
+                frontendImage="$(frontendImage)" \
+                frontendImageTag="$(frontendImageTag)" \
+              --query properties.outputs \
+              --output json > /tmp/app-deployment-output.json 2> "$deploymentErrorFile"; then
+              print_json_error "$deploymentErrorFile" 'ERROR: app deployment failed.'
+              exit 1
+            fi
+
+            output=$(cat /tmp/app-deployment-output.json)
+
+            backendUrl=$(echo "$output"  | jq -r '.backendUrl.value')
+            frontendUrl=$(echo "$output" | jq -r '.frontendUrl.value')
+
+            if [ -z "$frontendUrl" ] || [ "$frontendUrl" = "null" ]; then
+              echo "Bicep deployment did not return a frontend URL." >&2
+              exit 1
+            fi
+
+            # Write app outputs to blob storage so the dth pipeline can read them without manual parameters
+            jq -n \
+              --arg backendUrl "$backendUrl" \
+              --arg frontendUrl "$frontendUrl" \
+              '{backendUrl: $backendUrl, frontendUrl: $frontendUrl}' \
+              > /tmp/app-outputs.json
+
+            az storage blob upload \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name config \
+              --name app-outputs.json \
+              --file /tmp/app-outputs.json \
+              --overwrite \
+              --output none
+
+            echo ""
+            echo "=== App Deployment Complete ==="
+            echo "Backend URL:  $backendUrl"
+            echo "Frontend URL: $frontendUrl"
+            echo ""
+            echo "App outputs written to blob: config/app-outputs.json"
+            echo "Run the dth pipeline next — no parameters required."
+
+            echo "##vso[task.setvariable variable=backendUrl;isOutput=true]$backendUrl"
+            echo "##vso[task.setvariable variable=frontendUrl;isOutput=true]$frontendUrl"

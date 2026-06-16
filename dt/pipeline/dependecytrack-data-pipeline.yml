@@ -1,0 +1,170 @@
+# dt/pipeline/dependecytrack-data-pipeline.yml
+# Data pipeline: deploys the PostgreSQL Flexible Server, database, and Azure Files share for DT.
+# Run AFTER the foundation pipeline.
+#
+# Reads deployment inputs from 'foundation-outputs.json' in the 'config' blob container.
+# Writes deployment outputs to 'data-outputs.json' in the same container.
+
+trigger: none
+
+parameters: []
+
+variables:
+  - template: variables/common.yml
+
+jobs:
+  - job: DeployData
+    displayName: Deploy Data Layer
+    pool:
+      vmImage: $(vmImage)
+
+    steps:
+      - checkout: self
+
+      - task: AzureCLI@2
+        name: DataDeploy
+        displayName: Deploy data/main.bicep
+        # Map the password parameter to an env var so it is not expanded inline in the script
+        env:
+          DB_ADMIN_PASSWORD: $(dbAdminPassword)
+        inputs:
+          azureSubscription: $(azureServiceConnection)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            set -euo pipefail
+
+            deploymentErrorFile="/tmp/data-deployment-error.log"
+            deploymentName="dt-data-$(Build.BuildId)"
+
+            print_json_error() {
+              python3 - "$1" "$2" <<'PY'
+            import json
+            import pathlib
+            import sys
+
+            text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8').strip()
+            positions = [pos for pos in (text.find('{'), text.find('[')) if pos != -1]
+            json_start = min(positions) if positions else -1
+
+            if json_start == -1:
+                print(text, file=sys.stderr)
+                raise SystemExit(0)
+
+            prefix = text[:json_start].rstrip()
+            payload = text[json_start:]
+
+            try:
+                parsed = json.loads(payload)
+            except json.JSONDecodeError:
+                print(text, file=sys.stderr)
+            else:
+                if prefix:
+                    print(prefix, file=sys.stderr)
+                else:
+                    print(sys.argv[2], file=sys.stderr)
+                print(json.dumps(parsed, indent=2), file=sys.stderr)
+            PY
+            }
+
+            echo "Resolving storage account in '$(resourceGroupName)'..."
+
+            storageAccountName=$(az resource list \
+              --resource-group "$(resourceGroupName)" \
+              --resource-type Microsoft.Storage/storageAccounts \
+              --query "[0].name" \
+              --output tsv)
+
+            if [ -z "$storageAccountName" ] || [ "$storageAccountName" = "null" ]; then
+              echo "No storage account found in resource group $(resourceGroupName). Run the foundation pipeline first." >&2
+              exit 1
+            fi
+
+            storageKey=$(az storage account keys list \
+              --resource-group "$(resourceGroupName)" \
+              --account-name "$storageAccountName" \
+              --query "[0].value" \
+              --output tsv)
+
+            az storage blob download \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name config \
+              --name foundation-outputs.json \
+              --file /tmp/foundation-outputs.json \
+              --output none
+
+            baseName=$(jq -r '.baseName' /tmp/foundation-outputs.json)
+            vnetId=$(jq -r '.vnetId' /tmp/foundation-outputs.json)
+            dbSubnetId=$(jq -r '.dbSubnetId' /tmp/foundation-outputs.json)
+
+            if [ -z "$baseName" ] || [ "$baseName" = "null" ]; then
+              echo "foundation-outputs.json is missing expected values. Re-run the foundation pipeline." >&2
+              exit 1
+            fi
+
+            echo "storageAccountName: $storageAccountName"
+            echo "baseName:           $baseName"
+            echo "vnetId:             $vnetId"
+            echo "dbSubnetId:         $dbSubnetId"
+            echo ""
+            echo "Deploying data layer to '$(resourceGroupName)'..."
+
+            if ! az deployment group create \
+              --name "$deploymentName" \
+              --resource-group "$(resourceGroupName)" \
+              --template-file dt/infra/data/main.bicep \
+              --parameters \
+                env="$(environmentName)" \
+                location="$(location)" \
+                baseName="$baseName" \
+                storageAccountName="$storageAccountName" \
+                vnetId="$vnetId" \
+                dbSubnetId="$dbSubnetId" \
+                dbAdminUser="$(dbAdminUser)" \
+                dbAdminPassword="$DB_ADMIN_PASSWORD" \
+              --query properties.outputs \
+              --output json > /tmp/data-deployment-output.json 2> "$deploymentErrorFile"; then
+              print_json_error "$deploymentErrorFile" 'ERROR: data deployment failed.'
+              exit 1
+            fi
+
+            output=$(cat /tmp/data-deployment-output.json)
+
+            dbServerName=$(echo "$output"           | jq -r '.dbServerName.value')
+            dbName=$(echo "$output"                 | jq -r '.dbName.value')
+            dbUrl=$(echo "$output"                  | jq -r '.dbUrl.value')
+            vulnerabilityShareName=$(echo "$output" | jq -r '.vulnerabilityShareName.value')
+
+            if [ -z "$dbUrl" ] || [ "$dbUrl" = "null" ]; then
+              echo "Bicep deployment did not return a database URL." >&2
+              exit 1
+            fi
+
+            echo ""
+            echo "=== Data Outputs ==="
+            echo "dbServerName:          $dbServerName"
+            echo "dbName:                $dbName"
+            echo "dbUrl:                 $dbUrl"
+            echo "vulnerabilityShareName:$vulnerabilityShareName"
+            echo "(dbConnectionString is secret — not stored in blob)"
+
+            # Write data outputs to blob storage for the app pipeline
+            jq -n \
+              --arg dbUrl "$dbUrl" \
+              --arg vulnerabilityShareName "$vulnerabilityShareName" \
+              '{dbUrl: $dbUrl, vulnerabilityShareName: $vulnerabilityShareName}' \
+              > /tmp/data-outputs.json
+
+            az storage blob upload \
+              --account-name "$storageAccountName" \
+              --account-key "$storageKey" \
+              --container-name config \
+              --name data-outputs.json \
+              --file /tmp/data-outputs.json \
+              --overwrite \
+              --output none
+
+            echo ""
+            echo "Data outputs written to blob: config/data-outputs.json"
+            echo "Run the app pipeline next — no parameters required."

@@ -1,0 +1,87 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Purpose:
+#   Generate a CycloneDX JSON SBOM for either an npm or NuGet target and publish it
+#
+# Requirements:
+#   The pipeline must provide githubPat variable, for
+#   example through a variable group such as DependencyTrackGroup.
+#
+# Steps:
+#   1. Install the required SBOM tool for the selected target type.
+#   2. Generate the SBOM in CycloneDX JSON format.
+#   3. Publish the SBOM directory as a pipeline artifact.
+# ─────────────────────────────────────────────────────────────────────────────
+
+parameters:
+  - name: targetType
+    type: string
+    default: npm
+    values:
+      - npm
+      - nuget
+  - name: applicationName
+    type: string
+  - name: applicationComponentName
+    type: string
+  - name: workingDirectory
+    type: string
+    default: "$(Build.SourcesDirectory)/frontend"
+  - name: targetFile
+    type: string
+    default: "$(Build.SourcesDirectory)/frontend/package-lock.json"
+  - name: sbomOutputDirectory
+    type: string
+    default: "$(Build.SourcesDirectory)/frontend/public/.well-known/sbom"
+  - name: sbomFileName
+    type: string
+    default: "bom.json"
+
+steps:
+  # IF NPM, install the cdxgen and the CycloneDX Node.js tool
+  # Generate the SBOM in CycloneDX JSON format using the Node.js CycloneDX tool.
+  # Dependencies must already be installed (pnpm install) before this step runs.
+  - ${{ if eq(parameters.targetType, 'npm') }}:
+      - script: |
+          export FETCH_LICENSE=true
+          export GITHUB_TOKEN=$(githubPat)
+
+          npm install -g @cyclonedx/cdxgen
+
+          mkdir -p "${{ parameters.sbomOutputDirectory }}"
+
+          cdxgen \
+            --input "${{ parameters.targetFile }}" \
+            --output "${{ parameters.sbomOutputDirectory }}/${{ parameters.sbomFileName }}" \
+            --format cyclonedx-json \
+            --project-name "${{ parameters.applicationName }}-${{ parameters.applicationComponentName }}" \
+            --project-version "$(Build.BuildNumber)" \
+            --author "sroede" \
+            --git-branch "$(Build.SourceBranchName)" \
+            --git-commit "$(Build.SourceVersion)"
+        workingDirectory: "${{ parameters.workingDirectory }}"
+        displayName: "Generate SBOM (cdxgen)"
+
+  # IF NUGET, install the CycloneDX .NET global tool
+  # Generate the SBOM in CycloneDX JSON format
+  - ${{ if eq(parameters.targetType, 'nuget') }}:
+      - script: |
+          dotnet tool install --global CycloneDX --version 6.2.0
+
+          mkdir -p "${{ parameters.sbomOutputDirectory }}"
+
+          dotnet CycloneDX "${{ parameters.targetFile }}" \
+            -F Json \
+            -o "${{ parameters.sbomOutputDirectory }}" \
+            -fn "${{ parameters.sbomFileName }}" \
+            -sn "${{ parameters.applicationName }}-${{ parameters.applicationComponentName }}" \
+            -sv "$(Build.BuildNumber)" \
+            --enable-github-licenses --github-bearer-token $(githubPat)
+        displayName: "Generate SBOM (CycloneDX)"
+
+  # Publish the SBOM directory as a pipeline artifact
+  - task: PublishPipelineArtifact@1
+    displayName: "Publish SBOM artifact"
+    inputs:
+      targetPath: "${{ parameters.sbomOutputDirectory }}"
+      artifact: "sbom-${{ parameters.applicationComponentName }}"
+      publishLocation: "pipeline"
