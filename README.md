@@ -35,7 +35,7 @@ Software supply-chain incidents continue to demonstrate that dependency risk is 
 
 ### SBOM
 
-A foundational step is to produce an **Software Bill of Materials (SBOM)** for each application you develop. A SBOM is a formal, machine-readable inventory of all components, libraries, packages, and modules that make up a software product. Comparable to an ingredient list, it records what is included in a solution together with relevant metadata such as versions, suppliers, relationships, and licensing information. The SBOM not only lists direct dependencies but also all transitive dependencies they rely on.
+A foundational step is to produce a **Software Bill of Materials (SBOM)** for each application you develop. A SBOM is a formal, machine-readable inventory of all components, libraries, packages, and modules that make up a software product. Comparable to an ingredient list, it records what is included in a solution together with relevant metadata such as versions, suppliers, relationships, and licensing information. The SBOM not only lists direct dependencies but also all transitive dependencies they rely on.
 
 ![What is an SBOM](docs/10-project/assets/image-1.png)
 
