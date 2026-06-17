@@ -72,7 +72,7 @@ It represents a credible and accessible starting point for establishing OSS gove
 
 ![Ships it with Dependency-Track](docs/10-project/assets/image.png)
 
-Dependency-Track is not the only option on the market for SBOM platforms or Software Composition Analysis (SCA) tools, others are Syft leads OSS, FOSSA leads, Mend, Anchore Enterprise, Snyk, etc.
+Dependency-Track is not the only option on the market for SBOM platforms or Software Composition Analysis (SCA) tools; others include Syft (OSS), FOSSA, Mend, Anchore Enterprise, Snyk, etc.
 
 ---
 
