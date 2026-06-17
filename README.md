@@ -114,7 +114,7 @@ I used AI for faster prototyping, coding and documentation, I guided the AI to s
 
 ### Credits
 
-Because this was a recreation I have NOT captured all resources that inspired the implementation. Thanks to everyone who contributed to the open-source projects, and to the people who shared their knowledge and experience in the field of software supply-chain security
+Because this was a recreation I have NOT captured all resources that inspired the implementation. Thanks to everyone who contributed to the open-source projects, and to the people who shared their knowledge and experience in the field of software supply-chain security.
 
 ---
 
