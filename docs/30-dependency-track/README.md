@@ -1,6 +1,6 @@
 # Dependency-Track Deployment, Configuration, and Implementation Guide
 
-After you complete the demo application guide in [../20-demo-application/README.mdn](../20-demo-application/README.md), continue with the Dependency-Track deployment, configuration, and implementation guides in this folder.
+After you complete the demo application guide in [../20-demo-application/README.md](../20-demo-application/README.md), continue with the Dependency-Track deployment, configuration, and implementation guides in this folder.
 
 The `dt` folder contains the Azure infrastructure and Azure DevOps pipeline configuration for hosting [OWASP Dependency-Track](https://dependencytrack.org/) on Azure using Container Apps and PostgreSQL.
 
