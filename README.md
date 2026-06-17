@@ -106,7 +106,7 @@ This tutorial is based on a specific use case for a customer, and the implementa
 
 The goal is to provide a practical example of how to implement an OSS register with SBOM monitoring, but the specific architecture and design decisions may not be universally applicable. The tutorial focuses on demonstrating the core concepts and integration patterns, rather than prescribing a one-size-fits-all solution. Depending on your organization's specific requirements, constraints, and existing tooling, you may need to adapt the implementation accordingly. The key is to understand the underlying principles and how to leverage Dependency-Track effectively within your own context.
 
-> The code in this repository was 'recreated' based on the ideas and implementation for that customer. The the code is _simplified_ and adapted for demo purposes.
+> The code in this repository was 'recreated' based on the ideas and implementation for that customer. The code is _simplified_ and adapted for demo purposes.
 
 ### AI
 
