@@ -30,7 +30,7 @@ _For these reasons, implementing an open-source software (OSS) registry supporte
 
 Software supply-chain incidents continue to demonstrate that dependency risk is not theoretical, and today’s AI possibilities increase those risks. At the same time, the pace of software changes and the number of external dependencies makes it increasingly difficult to assess exposure manually. Many large organizations already operate formal controls in this area, but the same need applies to mid-sized and smaller organizations. Without centralized visibility:
 
-- **License risk can remain undetected**. Developers may introduce packages with commercially undesirable or prohibited licenses. In addition, maintainers can change licensing models over time, which means that routine upgrades may create immediate legal or commercial exposure. Recent examples are Fluent Assertions, AutoMapper en MediatR.
+- **License risk can remain undetected**. Developers may introduce packages with commercially undesirable or prohibited licenses. In addition, maintainers can change licensing models over time, which means that routine upgrades may create immediate legal or commercial exposure. Recent examples are Fluent Assertions, AutoMapper and MediatR.
 - **Vulnerability impact is difficult or impossible to assess quickly**. When a new vulnerability is disclosed, organizations need to determine rapidly where affected components are used. High-profile incidents such as SolarWinds, Log4Shell and the Axios supply-chain attack show the consequences of delayed visibility and response.
 
 ### SBOM
