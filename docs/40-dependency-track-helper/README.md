@@ -1,15 +1,10 @@
 # Dependency-Track Helper API
 
-See [README-implementation.md](../30-dependency-track/README-implementation.md) for the previous steps.
+See [../30-dependency-track/README-implementation.md](../30-dependency-track/README-implementation.md) for the previous guide.
 
 This section describes an opinionated improvement introduced to make the solution more manageable, based on an implementation done at a customer.
 
----
-
-## Contents
-
 - [Dependency-Track Helper API](#dependency-track-helper-api)
-  - [Contents](#contents)
   - [The problem](#the-problem)
     - [Proposed solution](#proposed-solution)
       - [Typical use case](#typical-use-case)

@@ -2,29 +2,13 @@
 
 This section describes the demo app at a high level.
 
-This is the expected frontend when the demo is running locally.
-
-![The Demo App - showing weather info](assets/image.png)
-
-## Contents
-
 - [DependencyTrack Weather App Demo](#dependencytrack-weather-app-demo)
-  - [Contents](#contents)
-  - [Folder Overview](#folder-overview)
   - [Frontend](#frontend)
   - [Backend](#backend)
+  - [Azure DevOps Pipeline](#azure-devops-pipeline)
   - [Run Locally](#run-locally)
 
----
-
-## Folder Overview
-
-```text
-demo/
-  backend/    .NET 10 minimal API (weather data from Open-Meteo) and unit tests
-  frontend/   React 19 SPA built with Vite
-  pipeline/   Azure DevOps YAML pipeline and shared build templates
-```
+![The Demo App - showing weather info](assets/image.png)
 
 ---
 
@@ -90,6 +74,12 @@ Important files:
 - `demo/backend/WeatherApiService.Api/WeatherApiService.Api.csproj`: project definition
 - `demo/backend/WeatherApiService.Tests/`: unit tests for the mapper, service, and image repository
 - `demo/backend/WeatherApiService.slnx`: solution file (open this in VS Code or Visual Studio)
+
+---
+
+## Azure DevOps Pipeline
+
+The yaml pipeline lives in `demo/pipeline/application-deployment-pipeline.yml` and is a simplified version of a real-world CI/CD pipeline. It can be used in DevOps Pipeline to have a basic CI/CD setup. It builds the frontend and backend artifacts, and runs dummy deploy jobs for `dev`, `test`, `acc`, and `prd`.
 
 ---
 

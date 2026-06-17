@@ -4,8 +4,6 @@ This `demo` folder contains a small full-stack weather application that serves a
 
 Dependency-Track is not yet integrated here. This application is the baseline that you extend when you later add SBOM generation and upload steps. The current tutorial scope is intentionally not deployed on a cloud environment.
 
-The solution includes a React frontend, a .NET 10 backend, and an Azure DevOps pipeline that builds both artifacts and includes environment stages for `dev`, `test`, `acc`, and `prd`, each ending in a dummy deploy job.
-
 ---
 
 ## The demo app
@@ -28,11 +26,10 @@ After running the pipeline, you should see:
 
 ![demo app pipeline execution](assets/image-2.png)
 
-The demo pipeline does four things:
+The demo pipeline does three things:
 
 - builds the backend and publishes a zipped artifact
 - builds the frontend and publishes the `dist` artifact
-- lets you select environment stages through the `stages` parameter
 - runs dummy deploy stages for `dev`, `test`, `acc`, and `prd` that confirm where real deployment steps would plug in
 
 It does not provision or update Azure resources.
@@ -41,6 +38,6 @@ It does not provision or update Azure resources.
 
 ---
 
-## Next step
+## Next guide
 
 Continue with the Dependency-Track deployment, configuration and implementation guide in [../30-dependency-track/README.md](../30-dependency-track/README.md).

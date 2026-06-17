@@ -6,14 +6,7 @@ This guide covers the steps to configure Dependency-Track after a successful dep
 
 So let configure Dependency-Track!
 
-![Dependency Track configuration](assets/image-30.png)
-
----
-
-## Contents
-
 - [Dependency-Track Configuration Guide](#dependency-track-configuration-guide)
-  - [Contents](#contents)
   - [First Login](#first-login)
     - [Change the Admin Password](#change-the-admin-password)
   - [Administration](#administration)
@@ -31,6 +24,8 @@ So let configure Dependency-Track!
   - [Policy Management](#policy-management)
     - [Considerations](#considerations)
   - [Next steps](#next-steps)
+
+![Dependency Track configuration](assets/image-30.png)
 
 ---
 

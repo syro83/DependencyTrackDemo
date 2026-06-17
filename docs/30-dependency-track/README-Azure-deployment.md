@@ -2,12 +2,7 @@
 
 See [README.md](./README.md) for the main overview. The `dt/` folder contains all infrastructure as code and pipeline definitions for the Azure deployment. It is organized into two main subfolders: `infra/` for Bicep files and `pipeline/` for Azure DevOps pipeline YAML files.
 
----
-
-## Contents
-
 - [Dependency-Track Azure Deployment Guide](#dependency-track-azure-deployment-guide)
-  - [Contents](#contents)
   - [Azure Subscription](#azure-subscription)
     - [What gets created On Azure](#what-gets-created-on-azure)
       - [Foundation layer](#foundation-layer)

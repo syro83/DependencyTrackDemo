@@ -1,12 +1,13 @@
-# Open-Source Software (OSS) Register (Dependency-Track Demo) Tutorial
+# The Open-source software (OSS) Registry with Dependency-Track Tutorial
 
-Start with the project plan in [/10-project/README.md](./10-project/README.md). If you prefer a hands-on flow, you can skip ahead and start with the demo application.
+Guides and walkthroughs for integrating Dependency-Track into a CI/CD pipeline, including a demo application, Azure infrastructure provisioning, and SBOM generation and upload steps. Guides are organized into four main sections:
 
-Next, review the demo application in [/20-demo-application/README.md](./20-demo-application/README.md). This is the application you integrate with Dependency-Track. It contains a simple React frontend and .NET backend, plus a pipeline that builds both and includes dummy deploy stages for `dev`, `test`, `acc`, and `prd`. The app is intentionally simple so the tutorial can focus on Dependency-Track integration.
+- [10-project](./10-project/README.md) - A dummy project plan that outlines the goals, scope, and implementation steps for the tutorial.
+- [20-demo-application](./20-demo-application/README.md) - A small full-stack weather application that serves as the starting point for the Dependency-Track tutorial. It includes a React frontend, a .NET backend, and an Azure DevOps pipeline with dummy deploy stages.
+- [30-dependency-track](./30-dependency-track/README.md) - Guides for deploying, configuring, and implementing Dependency-Track on Azure using Container Apps and PostgreSQL. It includes Azure infrastructure provisioning with Bicep, Azure DevOps pipelines, and initial platform setup.
+- [40-dependency-track-helper](./40-dependency-track-helper/README.md) - An opinionated helper API that addresses Dependency-Track project lifecycle gaps.
 
-Then continue with the Dependency-Track deployment and configuration guides in [/30-dependency-track/README.md](./30-dependency-track/README.md). These guides cover Azure infrastructure provisioning with Bicep, Azure DevOps pipelines, and initial platform setup. After Dependency-Track is running, continue with the implementation guide to add SBOM generation and upload steps to the CI/CD pipelines.
-
-Finally, check [/40-dependency-track-helper/README.md](./40-dependency-track-helper/README.md) for an opinionated helper API that addresses common Dependency-Track lifecycle gaps and provides a streamlined interface for managing projects, components, and vulnerabilities.
+![Tutorial from code to confidence](./10-project/assets/image-2.png)
 
 ---
 
