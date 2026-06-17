@@ -5,12 +5,7 @@ See [README.md](./README.md) for the main overview and [README-configuration.md]
 
 This guide describes how SBOM creation and upload are implemented in the demo application's Azure DevOps pipelines.
 
----
-
-## Contents
-
 - [Dependency-Track Implementation Guide](#dependency-track-implementation-guide)
-  - [Contents](#contents)
   - [Overview](#overview)
   - [Steps](#steps)
     - [Variable group setup](#variable-group-setup)
@@ -23,7 +18,7 @@ This guide describes how SBOM creation and upload are implemented in the demo ap
     - [Projects](#projects)
     - [Vulnerability Audit](#vulnerability-audit)
     - [Policy Violation Audit](#policy-violation-audit)
-  - [Next steps](#next-steps)
+  - [Next guide](#next-guide)
 
 ---
 
@@ -205,8 +200,8 @@ Recap:
 
 ---
 
-## Next steps
+## Next guide
 
 When a build pipeline runs frequently, Dependency-Track accumulates a project/version entry for every build. Most of these versions are no longer deployed anywhere and are not relevant to current risk. Over time this clutters the project list and creates noise around vulnerabilities in versions that are not in production. With more applications and more builds, this problem only gets worse.
 
-In the next part, see [README-improvements.md](../40-dependency-track-helper/README-improvements.md). There, the pipeline is adjusted and a helper service is introduced for opinionated lifecycle improvements.
+In the next part, see [../40-dependency-track-helper/README.md](../40-dependency-track-helper/README.md). There, the pipeline is adjusted and a helper service is introduced for opinionated lifecycle improvements.

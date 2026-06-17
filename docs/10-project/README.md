@@ -2,10 +2,6 @@
 
 > **AI Note**: This document reflects the project plan and tool selection done at the customer, But this report was generated with the assistance of AI. It contains some the same concepts and decisions as the original project documentation. Only use this as a reference for the general approach to tool evaluation and selection, not as a verbatim template for your own project. Always perform your own research and due diligence when selecting tools for your specific context and requirements.
 
----
-
-## Contents
-
 - [1. Project Overview](#1-project-overview)
 - [2. Background & Rationale](#2-background--rationale)
 - [3. Acceptance Criteria](#3-acceptance-criteria)
@@ -401,6 +397,6 @@ After evaluating all tools against the criteria defined in Section 4.1 and the a
 
 ---
 
-## Next step
+## Next guide
 
 Continue with the demo application pipeline walkthrough in [../20-demo-application/README.md](../20-demo-application/README.md).
