@@ -58,7 +58,7 @@ An SBOM provides the necessary source data, but on its own it is not sufficient.
 
 ### Dependency-Track
 
-A starting point could be [Dependency-Track](#the-open-source-software-oss-registry-with-dependency-track-tutorial) from the OSASP Foundation, this is an open-source platform for SBOM analysis and software supply-chain risk management. Dependency-Track is widely used and is designed to inventory components, identify vulnerabilities, and enforce policy across the software portfolio.
+A starting point could be [Dependency-Track](#the-open-source-software-oss-registry-with-dependency-track-tutorial) from the OWASP Foundation. This is an open-source platform for SBOM analysis and software supply-chain risk management. Dependency-Track is widely used and is designed to inventory components, identify vulnerabilities, and enforce policy across the software portfolio.
 
 - **Open-source platform**. Dependency-Track can be adopted without software license fees, which lowers the barrier to entry for organizations building supply-chain governance capabilities.
 - **Strong governance and analysis capabilities**. It supports SBOM ingestion, vulnerability intelligence correlation, license monitoring, policy evaluation, and impact analysis across projects and portfolios.
