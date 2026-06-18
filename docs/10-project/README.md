@@ -29,7 +29,7 @@ The absence of this visibility creates growing operational, legal, and security 
 
 Establish a centralised, continuously updated OSS & dependency register with automated SBOM ingestion, vulnerability monitoring, and license compliance enforcement — enabling all four development teams to detect and respond to supply-chain risks within hours, not days.
 
-![Ships it](assets/image.png)
+![OSS Register goal](assets/image-9.png)
 
 ---
 
@@ -101,7 +101,7 @@ Software supply-chain attacks and dependency vulnerabilities have become one of 
 
 ## 3. Acceptance Criteria
 
-The project is considered complete when all of the following criteria are met and verified by the Project Lead:
+The project is considered complete when all of the following criteria are met and verified by the Project Lead.
 
 | ID    | Criterion                                                                                                                                                          | Verification method                                        |
 |-------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|
@@ -359,6 +359,8 @@ GUAC ingests software supply-chain metadata (SBOMs, attestations, signatures, pr
 ## 5. Decision Rationale: Dependency-Track
 
 **Selected platform:** [Dependency-Track](https://dependencytrack.org) by OWASP (Apache 2.0 License)
+
+![Ships it](assets/image.png)
 
 ### Summary
 

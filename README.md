@@ -80,6 +80,8 @@ Dependency-Track is not the only option on the market for SBOM platforms or Soft
 
 This repository contains a tutorial on integrating [OWASP Dependency-Track](https://dependencytrack.org/) with a small full-stack demo application managed through CI/CD. It walks through using the demo application as a baseline, deploying Dependency-Track on Azure, and then wiring Dependency-Track into the demo application's build pipeline. The goal is to demonstrate how to implement an open-source software (OSS) register with SBOM monitoring and supply-chain security, providing continuous, structured visibility into all software components in use.
 
+![Continuous visibility and governance for vulnerability security and license compliance](docs/10-project/assets/image-8.png)
+
 ### From code to confidence
 
 The `docs/` folder contains the tutorial, see [docs/README.md](docs/README.md). The other README files in the subfolders provide detailed guides and walkthroughs for each aspect of the project, such as setting up the demo application, deploying Dependency-Track on Azure, configuring it, and integrating the demo CI/CD pipeline with Dependency-Track. And finally, an opinionated helper for Dependency-Track's lifecycle management.

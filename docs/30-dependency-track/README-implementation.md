@@ -6,7 +6,6 @@ See [README.md](./README.md) for the main overview and [README-configuration.md]
 This guide describes how SBOM creation and upload are implemented in the demo application's Azure DevOps pipelines.
 
 - [Dependency-Track Implementation Guide](#dependency-track-implementation-guide)
-  - [Overview](#overview)
   - [Steps](#steps)
     - [Variable group setup](#variable-group-setup)
     - [CI/CD Integration](#cicd-integration)
@@ -22,11 +21,14 @@ This guide describes how SBOM creation and upload are implemented in the demo ap
 
 ---
 
-## Overview
+## Steps
+
+In this section we go through the implementation steps. The end result is that after a build runs, two new projects appear in Dependency-Track with their own component and vulnerability list.
 
 The integration adds two capabilities to the demo application's existing Azure DevOps pipelines:
 
-1. **SBOM upload** — After each build on `main`/`master`, a CycloneDX SBOM is generated for the backend (NuGet) and frontend (npm) and uploaded to Dependency-Track. Dependency-Track then analyses the components against its vulnerability and license databases.
+1. **SBOM generation** — After each build on `main`/`master`, a CycloneDX SBOM is generated for the backend (NuGet) and frontend (npm).
+1. **SBOM upload** — After each build on `main`/`master`, the generated SBOMs are uploaded to Dependency-Track.
 
 The demo application has two build jobs defined in:
 
@@ -35,15 +37,9 @@ The demo application has two build jobs defined in:
 
 The SBOM steps are added to these existing jobs.
 
----
-
-## Steps
-
-In this section we go through the implementation steps. The end result is that after a build runs, two new projects appear in Dependency-Track with their own component and vulnerability list.
-
 ### Variable group setup
 
-Create an Azure DevOps variable group named **`DependencyTrackGroup`** and link it to the demo application deployment pipeline (`demo/pipeline/application-deployment-pipeline.yml`). This group centralizes the connection details for Dependency-Track.
+First, create an Azure DevOps variable group named **`DependencyTrackGroup`** and link it to the demo application deployment pipeline (`demo/pipeline/application-deployment-pipeline.yml`). This group centralizes the connection details for Dependency-Track.
 
 | Variable | Description |
 | --- | --- |
@@ -125,7 +121,7 @@ Then edit the existing `demo/pipeline/templates/application/build-frontend-job.y
 
 Now save and commit the changes. Then push a new commit to `main`/`master` to trigger the pipeline and review the results in Dependency-Track. Ensure permissions are granted to the variable group.
 
-After these steps run, Dependency-Track will show two projects — `WeatherApiService (backend)` and `WeatherApiService (frontend)` — each with their own component list and vulnerability findings.
+After these steps run, Dependency-Track will show two projects, `WeatherApiService (backend)` and `WeatherApiService (frontend)`, each with their own component list and vulnerability findings.
 
 To have a clearer view for the last part of the tutorial, execute a second build.
 
@@ -147,8 +143,6 @@ As seen in the screenshot below, the dashboard shows that we have 2 projects (th
 
 ![Dashboard](assets/image-20.png)
 
-![Remember: you cant protect what you cant see](assets/image-28.png)
-
 ### Projects
 
 The projects page lists all projects in the portfolio. Each project has its own page with a component list, vulnerability findings, and policy violations. This is where you can drill down into the details of each project and see which components are used and what vulnerabilities are associated with them.
@@ -159,7 +153,7 @@ As seen in the screenshot below, the `WeatherApiService (backend)` project has 3
 
 We can drill down further into the `WeatherApiService (backend)` project to see the list of components and their associated vulnerabilities. For example, we can see that the `Microsoft.AspNetCore.DataProtection` component is used in the backend project and has a known vulnerability with a critical severity.
 
-> **Note**: As we can see, due to 2 builds, we have 2 versions for each of the two projects. As a result we see that the same vulnerabilities and same policy violations are found in the projects.
+> **Note**: As we can see, due to 2 builds, we have 2 versions for each of the two projects. As a result we see that the same vulnerabilities and same policy violations are found in the projects. This is something you might want to take action on, because the fix is really simple: you can update the package to a newer version that has the vulnerability fixed. This is a good example of why it is important to have a lifecycle management strategy for your projects and their components.
 
 ![Backend vulnerabilities](assets/image-22.png)
 
@@ -167,7 +161,7 @@ And we see that we use a component for which we do not know the license. This co
 
 ![Backend license issues](assets/image-23.png)
 
-The same goes for the frontend project.
+The same goes for the frontend project. Which has a component with a known vulnerability.
 
 ![Frontend vulnerabilities](assets/image-24.png)
 
@@ -195,7 +189,7 @@ Recap:
   - A license that requires derivative works to be licensed under the same terms, often with additional restrictions. Examples include the GNU General Public License (GPL) and Affero General Public License (AGPL). For commercial use, these licenses can be problematic because they may require releasing source code for derivative works.
 - **Weak Copyleft**
   - A license that allows derivative works to be licensed under different terms, but still requires attribution and may have some restrictions. Examples include the Mozilla Public License (MPL) and Eclipse Public License (EPL). These licenses are generally more permissive than strong copyleft licenses, but they still require you to comply with certain conditions when using the software. You must release source code for modifications to the licensed component. You do not need to release source code for separate proprietary software that merely links to or uses the component.
-- **Unknown**
+- **Unknown** (not really a type of license, but a status in Dependency-Track)
   - A license that cannot be identified or is not recognized by the system. This can occur when a component does not have a clear license or when the license information is not properly documented. Unknown licenses can pose a risk as they may have unknown restrictions or obligations.
 
 ---
@@ -205,3 +199,7 @@ Recap:
 When a build pipeline runs frequently, Dependency-Track accumulates a project/version entry for every build. Most of these versions are no longer deployed anywhere and are not relevant to current risk. Over time this clutters the project list and creates noise around vulnerabilities in versions that are not in production. With more applications and more builds, this problem only gets worse.
 
 In the next part, see [../40-dependency-track-helper/README.md](../40-dependency-track-helper/README.md). There, the pipeline is adjusted and a helper service is introduced for opinionated lifecycle improvements.
+
+---
+
+![Remember: you can't protect what you can't see](assets/image-28.png)
