@@ -44,7 +44,7 @@ A minimal ASP.NET Core API automates Dependency-Track project lifecycle operatio
 2. Before the app will be deployed to prod, the CI/CD pipeline uploads the BOM directly to Dependency-Track, e.g for WeatherApiService version 1.2.3.
    2.1 The project is usable in Dependency-Track, vulnerability and license analysis will be done, the results are visible in Dependency-Track. Notifications are triggered if configured.
 3. After step 2, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 1 check.
-   3.1 Analyze results are checked. If any Critical or High, then the service fails, which causes the pipeline to fail. Which means the new version cannot be deployed to production until the issues are resolved.
+   - Analyze results are checked. If any Critical or High, then the service fails, which causes the pipeline to fail. Which means the new version cannot be deployed to production until the issues are resolved.
 4. When step 3 succeeds, then the WeatherApiService is actually deployed to the PROD environment.
 5. After step 4, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 4 phases.
    5.1 The new version becomes active and latest is set.
@@ -180,9 +180,11 @@ You can still investigate older versions if needed, but they are not cluttering 
 
 ![Dependency Track older versions](./assets/image-8.png)
 
-If you fix the identified issues in the demo code, you can end up with a clean Dependency-Track instance with no policy violations and no vulnerabilities.
+If you fix the identified issues in the demo code, you can end up with a clean Dependency-Track instance with no problematic policy violations and no vulnerabilities.
 
 ![Dependency Track dashboard issues fixed](./assets/image-10.png)
+
+When you change the level of the `License - Weak Copyleft` policy violation to `Info`, you can see that all issues will be resolved and the project is in a healthy state.
 
 ![Dependency Track projects issues fixed](./assets/image-11.png)
 
@@ -204,3 +206,5 @@ As earlier mentioned, you can improve the deployment of Dependency-Track and har
 ---
 
 You have reached the end of the tutorial.
+
+![Takeaways](../30-dependency-track/assets/image-27.png)
