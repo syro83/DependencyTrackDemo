@@ -202,4 +202,4 @@ In the next part, see [../40-dependency-track-helper/README.md](../40-dependency
 
 ---
 
-![Remember: you cant protect what you cant see](assets/image-28.png)
+![Remember: you can't protect what you can't see](assets/image-28.png)
