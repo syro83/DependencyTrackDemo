@@ -85,7 +85,7 @@ Dependency-Track uses teams to control what CI/CD pipelines and users can do. An
 1. Open the team you created.
 2. Click `API Keys`.
 3. Click `+` to generate a new key.
-4. Copy the key — it is only shown once. Store it in your CI/CD system as a secret.
+4. Copy the key, it is only shown once. Store it in your CI/CD system as a secret.
 
 The API key is passed in the `X-Api-Key` header for all authenticated API calls.
 
