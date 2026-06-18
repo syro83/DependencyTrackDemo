@@ -28,7 +28,7 @@ In this section we go through the implementation steps. The end result is that a
 The integration adds two capabilities to the demo application's existing Azure DevOps pipelines:
 
 1. **SBOM generation** — After each build on `main`/`master`, a CycloneDX SBOM is generated for the backend (NuGet) and frontend (npm).
-1. **SBOM upload** — After each build on `main`/`master`, the generated SBOM are uploaded to Dependency-Track.
+1. **SBOM upload** — After each build on `main`/`master`, the generated SBOMs are uploaded to Dependency-Track.
 
 The demo application has two build jobs defined in:
 
