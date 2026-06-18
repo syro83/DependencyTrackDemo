@@ -30,7 +30,7 @@ Key observations:
 - Many builds never reach the production environment.
 - Managing old builds is time-consuming, and Dependency-Track does not have a built-in way to handle this automatically.
 
-![De de bomen het bos niet meer zien](assets/image-12.png)
+![Door de bomen het bos niet meer zien](assets/image-12.png)
 
 ### Proposed solution
 
