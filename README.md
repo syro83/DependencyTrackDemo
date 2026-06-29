@@ -7,6 +7,7 @@
     - [Dependency-Track](#dependency-track)
   - [The Open-source software (OSS) Registry with Dependency-Track Tutorial](#the-open-source-software-oss-registry-with-dependency-track-tutorial)
     - [From code to confidence](#from-code-to-confidence)
+  - [Governance](#Governance) 
   - [Some Context](#some-context)
     - [Original case](#original-case)
     - [AI](#ai)
@@ -103,6 +104,16 @@ Then continue guide in [docs/30-dependency-track/README.md](docs/30-dependency-t
 Finally, check [docs/40-dependency-track-helper/README.md](docs/40-dependency-track-helper/README.md) for an opinionated helper API that addresses Dependency-Track project lifecycle gaps.
 
 ![Dependency Track project overview UI](docs/40-dependency-track-helper/assets/image-8.png)
+
+---
+
+## Governance
+
+While this tutorial focuses on the technical implementation and configuration of Dependency-Track, technology alone is only one part of a successful **Software Composition Analysis (SCA)** strategy. The real value of Dependency-Track is achieved when it is well embedded in a organisation and with a good **governance process**. A governance model also includes policies for introducing new open-source components, maintaining accurate Software Bill of Materials (SBOMs), establishing risk acceptance procedures, and integrating security monitoring into the software development lifecycle. Regular reporting, dashboards, and management reviews help ensure that software supply chain risks remain visible to both technical teams and decision-makers.
+
+These governance aspects are outside the scope of this technical tutorial. However, governance is arguably the more important aspect for achieving long-term success and demonstrating compliance with modern software security frameworks. 
+
+If you have specific questions about governance or best practices for embedding Dependency-Track into organisational processes, feel free to reach out.
 
 ---
 
