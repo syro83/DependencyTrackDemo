@@ -115,6 +115,9 @@ These governance aspects are outside the scope of this technical tutorial. Howev
 
 If you have specific questions about governance or best practices for embedding Dependency-Track into organisational processes, feel free to reach out.
 
+![Governance](docs/10-project/assets/image-16.png)
+
+
 ---
 
 ## Some Context
