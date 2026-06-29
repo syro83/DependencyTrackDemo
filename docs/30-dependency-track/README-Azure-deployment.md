@@ -151,6 +151,7 @@ az group delete --name rg-dependecytrack --yes
 
 For production use, apply standard security and reliability hardening, for example:
 
+- Rewrite pipeline yaml deploy code, the code does the job but no do not use it in production. 
 - Store secrets in Azure Key Vault.
 - Improve pipeline secret handoff and access controls.
 - Harden PostgreSQL configuration and choose an appropriate production SKU.
