@@ -12,6 +12,8 @@
     - [AI](#ai)
     - [Credits](#credits)
 
+> **TL;DR**: This repository contains a tutorial on integrating [OWASP Dependency-Track](https://dependencytrack.org/) with a small full-stack demo application managed through CI/CD. It walks through using the demo application as a baseline, deploying Dependency-Track on Azure, and then wiring Dependency-Track into the demo application's build pipeline. The goal is to demonstrate how to implement an open-source software (OSS) register with SBOM monitoring and supply-chain security, providing continuous, structured visibility into all software components in use. _Go to [docs/README.md](docs/README.md) for the tutorial_.
+
 ---
 
 ## The case for an open-source software registry
@@ -24,7 +26,7 @@ Without a structured approach in managing and controlling software with external
 - Licensing terms may restrict or prohibit commercial or internal use, creating legal and procurement exposure.
 - Business-critical applications may rely on outdated, unsupported, or low-quality dependencies that increase operational risk.
 
-![Software problems](docs/10-project/assets/image-3.png)
+![Software problems](docs/10-project/assets/image-3-b.png)
 
 _For these reasons, implementing an open-source software (OSS) registry supported by SBOM monitoring is an important control for achieving continuous visibility and governance into the components used across the organization._
 
@@ -32,6 +34,8 @@ Software supply-chain incidents continue to demonstrate that dependency risk is 
 
 - **License risk can remain undetected**. Developers may introduce packages with commercially undesirable or prohibited licenses. In addition, maintainers can change licensing models over time, which means that routine upgrades may create immediate legal or commercial exposure. Recent examples are Fluent Assertions, AutoMapper and MediatR.
 - **Vulnerability impact is difficult or impossible to assess quickly**. When a new vulnerability is disclosed, organizations need to determine rapidly where affected components are used. High-profile incidents such as SolarWinds, Log4Shell and the Axios supply-chain attack show the consequences of delayed visibility and response.
+
+![A OSS registry](docs/10-project/assets/image-13.png)
 
 ### SBOM
 
@@ -56,6 +60,8 @@ An SBOM provides the necessary source data, but on its own it is not sufficient.
 - Provide a notification mechanism (for example, email, webhook, or ticketing integration) for new vulnerabilities or license risks.
 - Offer a dashboard with real-time insight into risks, vulnerabilities, licenses, and component trends.
 
+![How it works](docs/10-project/assets/image-14.png)
+
 ### Dependency-Track
 
 A starting point could be [Dependency-Track](#the-open-source-software-oss-registry-with-dependency-track-tutorial) from the OWASP Foundation. This is an open-source platform for SBOM analysis and software supply-chain risk management. Dependency-Track is widely used and is designed to inventory components, identify vulnerabilities, and enforce policy across the software portfolio.
@@ -66,11 +72,11 @@ A starting point could be [Dependency-Track](#the-open-source-software-oss-regis
 - **API-first architecture**. Its API-centric model makes it suitable for integration with CI/CD pipelines, including Azure DevOps and GitHub.
 - **Straightforward deployment**. The platform is relatively lightweight and can be deployed in common cloud or containerized environments.
 
-![What is Dependency-Track](docs/10-project/assets/image-4.png)
+![What is Dependency-Track](docs/10-project/assets/image-12.png)
 
 It represents a credible and accessible starting point for establishing OSS governance. It covers all requirements. And, due to the open API-first design, it is possible to complement it with additional automation or internal services, for example, to ease project lifecycle management, SBOM upload workflows, or other integrations tailored to the necessary requirements.
 
-![Ships it with Dependency-Track](docs/10-project/assets/image.png)
+![Ships it with Dependency-Track](docs/10-project/assets/image-b.png)
 
 Dependency-Track is not the only option on the market for SBOM platforms or Software Composition Analysis (SCA) tools; others include Syft (OSS), FOSSA, Mend, Anchore Enterprise, Snyk, etc.
 
@@ -80,7 +86,7 @@ Dependency-Track is not the only option on the market for SBOM platforms or Soft
 
 This repository contains a tutorial on integrating [OWASP Dependency-Track](https://dependencytrack.org/) with a small full-stack demo application managed through CI/CD. It walks through using the demo application as a baseline, deploying Dependency-Track on Azure, and then wiring Dependency-Track into the demo application's build pipeline. The goal is to demonstrate how to implement an open-source software (OSS) register with SBOM monitoring and supply-chain security, providing continuous, structured visibility into all software components in use.
 
-![Continuous visibility and governance for vulnerability security and license compliance](docs/10-project/assets/image-8.png)
+![Continuous visibility and governance for vulnerability security and license compliance](docs/10-project/assets/image-15.png)
 
 ### From code to confidence
 
