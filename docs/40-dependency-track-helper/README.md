@@ -195,11 +195,17 @@ This concludes the integration improvements. Project maintenance is now automate
 Beside that, you can test and experiment with Dependency-Track features, such as:
 
 - Notifications and integrations with Jira, Slack, Teams, etc.
+  - Tip enabling notifications is a must, but you could overflow your team with alerts.
 - User management and authentication providers
+  - For any organisdation, this is a must. and it is easy to configure.
 - Policy management and custom policies improvements
+  - Experiment with this and you will find a configuration that fits your organisation.
 - Exploitability Context (VEX) documents to suppress known vulnerabilities in SBOMs
+  - Some vulnerabilities are known to be not exploitable in your environment. You can suppress these in Dependency-Track with VEX documents.
 - Improved License deduction to reduce unknown licenses and false positives.
+  - A solution i tested was instead of directly uploading the SBOM to Dependency-Track, first push it to the Helper API, and do some license deduction with static information. But, this leads to a external configuration place with static information needed, which needs to be updated once and a while, which is not ideal. So, this is a trade-off between false positives and external configuration.
 - DevOps pipeline improvements, such as SBOM validation and pipeline failing.
+  - Steps you should consider to improve the solution.
 
 As earlier mentioned, you can improve the deployment of Dependency-Track and harden the security of the solution.
 
