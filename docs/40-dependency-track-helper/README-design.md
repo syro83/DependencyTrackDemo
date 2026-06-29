@@ -5,17 +5,17 @@ Dependency-Track supports project and version management through its REST API, b
 
 1. The CI/CD pipeline creates a BOM when the application is built.
 2. Before the app will be deployed to prod, the CI/CD pipeline uploads the BOM directly to Dependency-Track, e.g for WeatherApiService version 1.2.3.
-   2.1 The project is usable in Dependency-Track, vulnerability and license analysis will be done, the results are visible in Dependency-Track. Notifications are triggered if configured.
-3. After step 2, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 1 check.
-   3.1 Analyze results are checked. If any Critical or High, then the service fails, which causes the pipeline to fail. Which means the new version cannot be deployed to production until the issues are resolved.
-4. When step 3 succeeds, then the WeatherApiService is actually deployed to the PROD environment.
-5. After step 4, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 4 phases.
-   5.1 The new version becomes active and latest is set.
-   5.2 A Parent project is created if needed, and the relation is set.
-   5.3 Older versions are deactivated (with the same application name).
-   5.4 Older versions are optionally pruned (with the same application name)
+   - The project is usable in Dependency-Track, vulnerability and license analysis will be done, the results are visible in Dependency-Track. Notifications are triggered if configured.
+3. Then the WeatherApiService is actually deployed to the PROD environment.
+4. After step 3, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 4 phases.
+   - The new version becomes active and latest is set.
+   - A Parent project is created if needed, and the relation is set.
+   - Older versions are deactivated (with the same application name).
+   - Older versions are optionally pruned (with the same application name)
 
 ![CI/CD pipeline use case infographic](assets/image-9.png)
+
+> **Note**: This demo does not contain the pre-deployment-gate with the validation check code, you can do this by your self.
 
 ---
 
