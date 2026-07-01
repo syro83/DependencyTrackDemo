@@ -1,6 +1,6 @@
 # Project Plan: OSS & Dependency Register with SBOM Monitoring
 
-> **AI Note**: This document reflects the project plan and tool selection done at the customer, But this report was generated with the assistance of AI. It contains some the same concepts and decisions as the original project documentation. Only use this as a reference for the general approach to tool evaluation and selection, not as a verbatim template for your own project. Always perform your own research and due diligence when selecting tools for your specific context and requirements.
+> **AI Note**: This document reflects the project plan and tool selection performed for a customer, but this report was generated with assistance from AI. It contains some of the same concepts and decisions as the original project documentation. Use it as a reference for the general approach to tool evaluation and selection, not as a verbatim template for your own project. Always perform your own research and due diligence when selecting tools for your specific context and requirements.
 
 - [1. Project Overview](#1-project-overview)
 - [2. Background & Rationale](#2-background--rationale)
@@ -27,7 +27,7 @@ The absence of this visibility creates growing operational, legal, and security 
 
 ### Goal
 
-Establish a centralised, continuously updated OSS & dependency register with automated SBOM ingestion, vulnerability monitoring, and license compliance enforcement — enabling all four development teams to detect and respond to supply-chain risks within hours, not days.
+Establish a centralized, continuously updated OSS and dependency register with automated SBOM ingestion, vulnerability monitoring, and license compliance enforcement, enabling all four development teams to detect and respond to supply-chain risks within hours instead of days.
 
 ![OSS Register goal](assets/image-9.png)
 

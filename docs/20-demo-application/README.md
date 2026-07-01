@@ -107,7 +107,7 @@ Important files:
 
 ### Azure DevOps Pipeline
 
-The yaml pipeline lives in `demo/pipeline/application-deployment-pipeline.yml` and is a simplified version of a real-world CI/CD pipeline. It can be used in DevOps Pipeline to have a basic CI/CD setup. It builds the frontend and backend artifacts, and runs dummy deploy jobs for `dev`, `test`, `acc`, and `prd`.
+The YAML pipeline lives in `demo/pipeline/application-deployment-pipeline.yml` and is a simplified version of a real-world CI/CD pipeline. You can use it in Azure DevOps Pipelines as a basic CI/CD setup. It builds frontend and backend artifacts and runs placeholder deploy jobs for `dev`, `test`, `acc`, and `prd`.
 
 ### Run Locally
 

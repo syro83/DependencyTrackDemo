@@ -4,9 +4,9 @@ Moderne softwareontwikkeling is sterk afhankelijk van open-sourcecomponenten uit
 
 Zonder een goede aanpak voor het beheer van de applicaties met externe componenten lopen organisaties verschillende risico’s:
 
-- **De impact van kwetsbaarheden is niet of moeilijk beoordelen**. Wanneer een nieuwe kwetsbaarheid wordt gepubliceerd, moeten organisaties snel kunnen vaststellen waar de getroffen componenten worden gebruikt. Bekende incidenten zoals SolarWinds, Log4Shell en de Axios supply-chain attack laten de gevolgen zien van vertraagde zichtbaarheid en respons.
+- **De impact van kwetsbaarheden is moeilijk of niet te beoordelen**. Wanneer een nieuwe kwetsbaarheid wordt gepubliceerd, moeten organisaties snel kunnen vaststellen waar getroffen componenten worden gebruikt. Bekende incidenten zoals SolarWinds, Log4Shell en de Axios supply-chain attack laten de gevolgen zien van vertraagde zichtbaarheid en respons.
 - **Licentierisico kan onopgemerkt blijven**. Ontwikkelaars kunnen pakketten introduceren met commercieel onwenselijke of verboden licenties. Daarnaast kunnen maintainers hun licentiemodel in de loop van de tijd wijzigen, waardoor routinematige upgrades direct juridische problemen veroorzaken. Recente voorbeelden zijn Fluent Assertions, AutoMapper en MediatR.
-- **Vertragingen in softwareontwikkeling**. Bedrijfskritische applicaties kunnen afhankelijk zijn van verouderde, niet-ondersteunde of kwalitatief zwakke componenten, wat het operationele risico vergroot. Applicaties kunnen niet goed doorontwikkeld worden, omdat er risico's zijn om een cruciaal oud component te updaten omdat deze er al inzit dan de meeste ontwikkelaars. Of, je technologie stack blijft steken op een EOF versie omdat een component niet meer wordt onderhouden.
+- **Vertragingen in softwareontwikkeling**. Bedrijfskritische applicaties kunnen afhankelijk zijn van verouderde, niet-ondersteunde of kwalitatief zwakke componenten, wat het operationele risico vergroot. Applicaties zijn dan moeilijker door te ontwikkelen, omdat het upgraden van cruciale oude componenten extra risico oplevert. Ook kan de technologiestack blijven steken op een end-of-life versie wanneer een component niet meer wordt onderhouden.
 
 </br>
 <p align="center">
@@ -30,11 +30,11 @@ Een fundamentele eerste stap is het opstellen van een **Software Bill of Materia
 </br>
 </br>
 
-SBOM’s vormen inmiddels een essentieel bouwblok voor software supply-chainbeveiliging en compliance. Bij elke nieuwe softwareversie moet men een actuele SBOM te genereren. Dit wordt gerealiseerd door het SBOM generatieproces te integreren in de bestaande CI/CD pijplijnen, zodat dit automatisch en consistent plaats vindt.
+SBOM's vormen inmiddels een essentieel bouwblok voor software supply-chainbeveiliging en compliance. Bij elke nieuwe softwareversie moet een actuele SBOM worden gegenereerd. Dit wordt gerealiseerd door het SBOM-generatieproces te integreren in bestaande CI/CD-pijplijnen, zodat dit automatisch en consistent plaatsvindt.
 
 ## Open-Source Software (OSS)-register
 
-Een SBOM levert de noodzakelijke brondata, maar is op zichzelf niet voldoende. Om deze informatie effectief te gebruiken, heb je een centrale inventaris van alle deze open‑source‑componenten nodig. En een proces dat componentgegevens binnen het volledige applicatielandschap continu inleest/bijhoud, analyseert en bewaakt. Typische eisen aan een dergelijk register zijn:
+Een SBOM levert de noodzakelijke brondata, maar is op zichzelf niet voldoende. Om deze informatie effectief te gebruiken, is een centrale inventaris van alle open-sourcecomponenten nodig. Daarnaast is een proces nodig dat componentgegevens binnen het volledige applicatielandschap continu inleest en bijhoudt, analyseert en bewaakt. Typische eisen aan een dergelijk register zijn:
 
 - Automatisch SBOM’s importeren vanuit CI/CD-pijplijnen voor alle relevante applicaties en diensten.
 - Een centraal overzicht bieden van alle gebruikte softwarecomponenten, inclusief versie, licentietype en herkomst.
@@ -54,7 +54,7 @@ Een SBOM levert de noodzakelijke brondata, maar is op zichzelf niet voldoende. O
 
 ### Dependency-Track
 
-Een startpunt kan [Dependency-Track](https://dependencytrack.org/) van OWASP Foundation zijn, dit is een open-sourceplatform voor SBOM-analyse en risicobeheer van de software supply chain. Dependency-Track is veel gebruikt en is het ontworpen om componenten te inventariseren, kwetsbaarheden te identificeren en beleid af te dwingen.
+Een startpunt kan [Dependency-Track](https://dependencytrack.org/) van de OWASP Foundation zijn. Dit is een open-sourceplatform voor SBOM-analyse en risicobeheer van de software supply chain. Dependency-Track wordt veel gebruikt en is ontworpen om componenten te inventariseren, kwetsbaarheden te identificeren en beleid af te dwingen.
 
 - **Open-sourceplatform**. Dependency-Track kan zonder softwarelicentiekosten worden ingevoerd, wat de instapdrempel verlaagt voor organisaties die hun supply-chaingovernance willen versterken.
 - **Sterke governance- en analysemogelijkheden**. Het ondersteunt SBOM-inname, correlatie van kwetsbaarheidsinformatie, licentiemonitoring, beleidsevaluatie en impactanalyse over projecten en portfolio’s heen.
@@ -69,7 +69,7 @@ Een startpunt kan [Dependency-Track](https://dependencytrack.org/) van OWASP Fou
 </br>
 </br>
 
-Het is een goed, degelijk en toegankelijk startpunt voor het inrichten van OSS-governance. In de basis biedt het alles wat noodzakelijk is. Door de open API-first design is het mogelijk om het platform aan te vullen met aanvullende automatisering of interne services, bijvoorbeeld om project lifecycle management te verbeteren, SBOM-uploadprocessen of andere integraties zodat dit beter aansluiten op de gewenste behoeftes. Een "goed" geimplementeerde CI/CD process met OSS governance ziet er ongeveer als volgt uit.
+Het is een goed, degelijk en toegankelijk startpunt voor het inrichten van OSS-governance. In de basis biedt het alles wat noodzakelijk is. Door het open API-first ontwerp is het mogelijk om het platform aan te vullen met aanvullende automatisering of interne services, bijvoorbeeld om project lifecycle management, SBOM-uploadprocessen of andere integraties beter te laten aansluiten op de gewenste behoeften. Een goed geimplementeerd CI/CD-proces met OSS-governance ziet er ongeveer als volgt uit.
 
 </br>
 <p align="center">
@@ -78,13 +78,13 @@ Het is een goed, degelijk en toegankelijk startpunt voor het inrichten van OSS-g
 </br>
 </br>
 
-Andere noemens waardige SBOM platformen en Software Composition Analysis (SCA)  tools zijn: Syft leads OSS, FOSSA leads, Mend, Anchore Enterprise, Snyk en nog veel meer.
+Andere noemenswaardige SBOM-platformen en Software Composition Analysis (SCA)-tools zijn bijvoorbeeld Syft (OSS), FOSSA, Mend, Anchore Enterprise en Snyk.
 
 ## Governance
 
-Technologie is slechts één onderdeel van een succesvolle een goed ingerichte Software ontwikkelstrategie. De werkelijke meerwaarde van Dependency-Track wordt pas bereikt wanneer de oplossing goed is ingebed binnen de organisatie en wordt ondersteund door een effectief _governanceproces_.
+Technologie is slechts een onderdeel van een goed ingerichte softwareontwikkelstrategie. De werkelijke meerwaarde van Dependency-Track wordt pas bereikt wanneer de oplossing goed is ingebed binnen de organisatie en wordt ondersteund door een effectief _governanceproces_.
 
-Een goed governance omvat onder andere beleid voor het introduceren van nieuwe open-sourcecomponenten, het actueel houden van Software Bill of Materials (SBOM's), procedures voor risicoacceptatie en de integratie van beveiligingsmonitoring in de volledige softwareontwikkelcyclus. Opvolging en eigenaarschap hierin is cruciaal. Daarnaast zorgen periodieke rapportages, dashboards en managementreviews ervoor dat risico's binnen de software supply chain zichtbaar blijven voor zowel technische teams als besluitvormers.
+Goede governance omvat onder andere beleid voor het introduceren van nieuwe open-sourcecomponenten, het actueel houden van Software Bills of Materials (SBOM's), procedures voor risicoacceptatie en de integratie van beveiligingsmonitoring in de volledige softwareontwikkelcyclus. Opvolging en eigenaarschap hierin zijn cruciaal. Daarnaast zorgen periodieke rapportages, dashboards en managementreviews ervoor dat risico's binnen de software supply chain zichtbaar blijven voor zowel technische teams als besluitvormers.
 
 Dit is een continu proces dat regelmatig moet worden geëvalueerd en aangepast aan veranderende technologieën, bedreigingen en bedrijfsbehoeften. Alleen door een benadering van zowel technologie als governance kunnen organisaties effectief de risico's van open-sourcecomponenten beheren en de voordelen van moderne softwareontwikkeling benutten.
 

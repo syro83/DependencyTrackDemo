@@ -19,7 +19,7 @@
 
 ## The case for an open-source software registry
 
-Modern software delivery depends heavily on open-source components obtained through ecosystems such as NuGet and npm. While these components accelerate the development, they also introduce governance, security, and compliance risk when they are adopted without governance and control.
+Modern software delivery depends heavily on open-source components obtained through ecosystems such as NuGet and npm. While these components accelerate development, they also introduce governance, security, and compliance risk when adopted without sufficient control.
 
 Without a structured approach in managing and controlling software with external components, tools and libraries, organizations face several risks:
 
@@ -46,7 +46,7 @@ A foundational step is to produce a **Software Bill of Materials (SBOM)** for ea
 
 SBOMs are now a core building block of software supply-chain security and compliance. Guidance from CISA positions SBOMs as a key mechanism for software transparency and risk management, particularly for vulnerability response and supply-chain assurance.
 
-For every new software release, generating an up to date SBOM is mandatory. This requirement is fulfilled by integrating the SBOM generation process into the existing CI/CD pipelines, ensuring that it occurs automatically and consistently.
+For every new software release, generating an up-to-date SBOM is mandatory. This requirement is fulfilled by integrating SBOM generation into existing CI/CD pipelines, ensuring it occurs automatically and consistently.
 
 ### Open-Source Software (OSS) registry
 
@@ -99,7 +99,7 @@ Start with the dummy project plan in [docs/10-project/README.md](docs/10-project
 
 Next, review the demo application in [docs/20-demo-application/README.md](docs/20-demo-application/README.md). This is the application you integrate with Dependency-Track. It contains a simple React frontend and .NET backend, plus a pipeline that builds both and includes dummy deploy stages for `dev`, `test`, `acc`, and `prd`. The app is intentionally simple so the tutorial can focus on Dependency-Track integration.
 
-Then continue guide in [docs/30-dependency-track/README.md](docs/30-dependency-track/README.md) with the Dependency-Track guides. These guides cover Azure infrastructure provisioning with Bicep, Azure DevOps pipelines, and initial platform configuration. After Dependency-Track is running, it continues with the implementation of SBOM generation and upload steps to the CI/CD pipeline of the Demo app.
+Then continue with [docs/30-dependency-track/README.md](docs/30-dependency-track/README.md) for the Dependency-Track guides. These guides cover Azure infrastructure provisioning with Bicep, Azure DevOps pipelines, and initial platform configuration. After Dependency-Track is running, continue with implementing SBOM generation and upload steps in the demo app CI/CD pipeline.
 
 Finally, check [docs/40-dependency-track-helper/README.md](docs/40-dependency-track-helper/README.md) for an opinionated helper API that addresses Dependency-Track project lifecycle gaps.
 
@@ -109,14 +109,13 @@ Finally, check [docs/40-dependency-track-helper/README.md](docs/40-dependency-tr
 
 ## Governance
 
-While this tutorial focuses on the technical implementation and configuration of Dependency-Track, technology alone is only one part of a successful **Software Composition Analysis (SCA)** strategy. The real value of Dependency-Track is achieved when it is well embedded in a organisation and with a good **governance process**. A governance model also includes policies for introducing new open-source components, maintaining accurate Software Bill of Materials (SBOMs), establishing risk acceptance procedures, and integrating security monitoring into the software development lifecycle. Regular reporting, dashboards, and management reviews help ensure that software supply chain risks remain visible to both technical teams and decision-makers.
+While this tutorial focuses on the technical implementation and configuration of Dependency-Track, technology alone is only one part of a successful **Software Composition Analysis (SCA)** strategy. The real value of Dependency-Track is achieved when it is embedded in an organization with a strong **governance process**. A governance model also includes policies for introducing new open-source components, maintaining accurate Software Bills of Materials (SBOMs), establishing risk acceptance procedures, and integrating security monitoring into the software development lifecycle. Regular reporting, dashboards, and management reviews help ensure that software supply-chain risks remain visible to both technical teams and decision-makers.
 
 These governance aspects are outside the scope of this technical tutorial. However, governance is arguably the more important aspect for achieving long-term success and demonstrating compliance with modern software security frameworks.
 
 If you have specific questions about governance or best practices for embedding Dependency-Track into organisational processes, feel free to reach out.
 
 ![Governance](docs/10-project/assets/image-16.png)
-
 
 ---
 
@@ -132,13 +131,10 @@ The goal is to provide a practical example of how to implement an OSS register w
 
 ### AI
 
-I used AI for faster prototyping, coding and documentation, I guided the AI to steer it towards the desired outcomes, tried to review everything and to fix mistakes or unclear parts, but some issues may remain. Always review code and documentation found on the internet, including this repository.
+I used AI for faster prototyping, coding, and documentation. I guided the AI toward the desired outcomes, reviewed the results, and corrected issues where possible, but some mistakes may remain. Always review code and documentation found on the internet, including this repository.
 
 ### Credits
 
 Because this was a recreation I have NOT captured all resources that inspired the implementation. Thanks to everyone who contributed to the open-source projects, and to the people who shared their knowledge and experience in the field of software supply-chain security.
 
 ---
-
-![Takeaways](docs/30-dependency-track/assets/image-27.png)
-![Implementing OSS](docs/10-project/assets/image-17.png)

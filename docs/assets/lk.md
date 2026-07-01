@@ -20,7 +20,7 @@
 
 ![alt text](assets/image-4.png)
 
-## Ci/Cd Pipeline with Dependency-Track Integration
+## CI/CD Pipeline with Dependency-Track Integration
 
 ![alt text](assets/image-5.png)
 

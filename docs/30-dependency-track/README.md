@@ -26,7 +26,7 @@ If you are using a new Azure subscription for this setup, prepare it before crea
 4. Provider registration can take a few minutes. If a pipeline fails with a provider or resource type error immediately after starting, check the registration status in the portal.
 5. Navigate to `Resource groups`, create a resource group named `rg-dependecytrack`, and select the subscription for this demo.
 
-#### What gets created On Azure
+#### What gets created on Azure
 
 All resources land in a single resource group; they are created by three pipelines with three related Bicep files.
 
@@ -131,7 +131,7 @@ az group delete --name rg-dependecytrack --yes
 
 For production use, apply standard security and reliability hardening, for example:
 
-- Rewrite pipeline yaml deploy code, the code does the job but no do not use it in production.
+- Rewrite and harden the pipeline deployment YAML before production use. The current implementation is suitable for demo purposes only.
 - Store secrets in Azure Key Vault.
 - Improve pipeline secret handoff and access controls.
 - Harden PostgreSQL configuration and choose an appropriate production SKU.
@@ -171,7 +171,7 @@ Changing the default password is the first thing you should do before any other 
 3. Enter the current password (`admin`) and a new strong password.
 4. Click `Update Password`.
 
-> **Note**: strange for a product from the OWASP Foundation and it does not have any password policies, oke you should use a external authentication provider in production, but still, consider enforcing a strong password here.
+> **Note**: It is surprising that no password policy is enforced by default. In production you should use an external authentication provider, but even for local/demo use, enforce a strong administrator password.
 
 ### Administration
 
@@ -317,10 +317,10 @@ In addition to these general rules, you can define policies targeting specific p
 
 #### Considerations
 
-This is a starting point for policy management,a and not what i ended up for productions. Do your own experiments, but note that:
+This is a starting point for policy management, not a final production setup. Do your own testing and tuning, and keep the following points in mind:
 
 - The `License - Unknown` policy is important to identify components that are missing license information. This can be a sign of an incomplete SBOM or a component that needs manual review. By excluding internal components from this policy, you can focus on third-party dependencies that may pose legal risks. *BUT*, this policy will also create a large amount of noise if your SBOMs are missing license data for many components. If you have a large number of violations from this policy, consider improving the quality of your SBOMs or disabling the policy until you can address the underlying issue.
-- The `License - Weak Copyleft` policy will flag a lot of open source components which properly will not be a problem for your organization, unlike the permissive licenses.
+- The `License - Weak Copyleft` policy can flag many open-source components that may still be acceptable for your organization, depending on your legal and compliance policy.
 - Vulnerability policies are optional. If enabled, a vulnerability can appear both as a vulnerability finding and as a policy violation. Depending on your preferred workflow, you may choose to keep policies only for license rules.
 
 ---
@@ -336,8 +336,8 @@ The integration adds two capabilities to the demo application's existing Azure D
 
 The demo application has two build jobs defined in:
 
-- `demo/pipeline/templates/application/build-backend-job.yml` — builds the .NET backend
-- `demo/pipeline/templates/application/build-frontend-job.yml` — builds the React frontend
+- `demo/pipeline/templates/application/build-backend-job.yml` - builds the .NET backend
+- `demo/pipeline/templates/application/build-frontend-job.yml` - builds the React frontend
 
 The SBOM steps are added to these existing jobs.
 
@@ -370,7 +370,7 @@ In your repository, create a new reusable template at `demo/pipeline/templates/a
 2. **Publish** the SBOM as a pipeline artifact so it is retained with the build.
 3. **Upload** the SBOM to Dependency-Track via its REST API using the `Automation` team API key.
 
-See the [template file](./assets/build-create-and-upload-sbom.yml) for the content and for the full implementation. The template accepts parameters for the target type (NuGet or npm), application name, component name, working directory, target file, and SBOM output directory.
+See the [template file](./assets/build-create-and-upload-sbom.yml) for the full implementation. The template accepts parameters for the target type (NuGet or npm), application name, component name, working directory, target file, and SBOM output directory.
 
 *Resolving licenses*
 The template queries public registries to improve license resolution. This increases build time, but significantly reduces unresolved licenses. For npm, set the environment variable `FETCH_LICENSE=true`. Also set `GITHUB_TOKEN`; otherwise, API rate limits may prevent license resolution.
@@ -435,7 +435,7 @@ This tutorial focuses on the implementation of the SBOM upload to Dependency-Tra
 
 This section also gives a short tour of the Dependency-Track UI and its main features.
 
-> **Note**: Background jobs in Dependency-Track may take time to start and complete. On the first run, downloading vulnerability data can take up to **24 hours**. If you just uploaded an SBOM, allow time for components and vulnerabilities to appear in the UI. (so be patient ;) )
+> **Note**: Background jobs in Dependency-Track may take time to start and complete. On the first run, downloading vulnerability data can take up to **24 hours**. If you just uploaded an SBOM, allow time for components and vulnerabilities to appear in the UI.
 
 #### Dashboard
 
@@ -485,14 +485,10 @@ A short recap on license types follows. This is a high-level summary only, not l
 
 Recap:
 
-- **Non-Commercial (NC) license**
-  - A license that prohibits commercial use of the software. Examples include the Creative Commons Non-Commercial (CC BY-NC) and the GNU General Public License for Non-Commercial Use (GPL-NC). For commercial use, these licenses are problematic as they restrict the ability to use the software in a commercial context.
-- **(Strong) Copyleft**
-  - A license that requires derivative works to be licensed under the same terms, often with additional restrictions. Examples include the GNU General Public License (GPL) and Affero General Public License (AGPL). For commercial use, these licenses can be problematic because they may require releasing source code for derivative works.
-- **Weak Copyleft**
-  - A license that allows derivative works to be licensed under different terms, but still requires attribution and may have some restrictions. Examples include the Mozilla Public License (MPL) and Eclipse Public License (EPL). These licenses are generally more permissive than strong copyleft licenses, but they still require you to comply with certain conditions when using the software. You must release source code for modifications to the licensed component. You do not need to release source code for separate proprietary software that merely links to or uses the component.
-- **Unknown** (not really a type of license, but a status in Dependency-Track)
-  - A license that cannot be identified or is not recognized by the system. This can occur when a component does not have a clear license or when the license information is not properly documented. Unknown licenses can pose a risk as they may have unknown restrictions or obligations.
+- **Non-Commercial (NC) license**: A license that prohibits commercial use of the software. Examples include Creative Commons Non-Commercial (CC BY-NC). For commercial use, these licenses are usually problematic.
+- **(Strong) Copyleft**: A license that requires derivative works to be licensed under the same terms, often with additional restrictions. Examples include GNU GPL and AGPL. For commercial use, these licenses can be problematic because they may require releasing source code for derivative works.
+- **Weak Copyleft**: A license that allows derivative works to be licensed under different terms, but still requires attribution and specific compliance conditions. Examples include MPL and EPL. These licenses are generally more permissive than strong copyleft licenses, but they still require you to comply with certain conditions when using the software. You must release source code for modifications to the licensed component. You do not need to release source code for separate proprietary software that merely links to or uses the component.
+- **Unknown** (not a license type, but a Dependency-Track status): A license that cannot be identified or is not recognized by the system. This can occur when a component does not have a clear license or when the license information is not properly documented. Unknown licenses can pose a risk as they may have unknown restrictions or obligations.
 
 ---
 

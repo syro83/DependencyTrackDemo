@@ -1,12 +1,12 @@
 # Dependency-Track Helper API
 
-See [../30-dependency-track/README-implementation.md](../30-dependency-track/README-implementation.md) for the previous guide.
+See [../30-dependency-track/README.md](../30-dependency-track/README.md) for the previous guide.
 
-This guide describes an opinionated improvement introduced to make the solution more manageable, based on an implementation done at a customer. The guide is split into two sections:
+This guide describes an opinionated improvement introduced to make the solution more manageable, based on a customer implementation. The guide is split into three sections:
 
 - Start with [The Dependency-Track Helper API case](#the-dependency-track-helper-api-case) for the problem description and the proposed solution.
-- The next section [Dependency-Track Helper API details](#dependency-track-helper-api-details) describe the inner workings and implementation of the API.
-- The last section [Dependency-Track Helper Implementation](#dependency-track-helper-implementation) describe the implementation of the API and the changes needed in the demo application pipeline to use the API.
+- The next section [Dependency-Track Helper API details](#dependency-track-helper-api-details) describes the inner workings and implementation of the API.
+- The last section [Dependency-Track Helper Implementation](#dependency-track-helper-implementation) describes the implementation of the API and the changes needed in the demo application pipeline to use it.
 
 ## The Dependency-Track Helper API case
 
@@ -30,12 +30,12 @@ A minimal ASP.NET Core API automates Dependency-Track project lifecycle operatio
 #### Typical use case
 
 1. The CI/CD pipeline creates a BOM when the application is built.
-2. Before the app will be deployed to prod, the CI/CD pipeline uploads the BOM directly to Dependency-Track, e.g for WeatherApiService version 1.2.3.
-   - The project is usable in Dependency-Track, vulnerability and license analysis will be done, the results are visible in Dependency-Track. Notifications are triggered if configured.
-3. After step 2, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 1 check.
-   - Analyze results are checked. If any Critical or High, then the service fails, which causes the pipeline to fail. Which means the new version cannot be deployed to production until the issues are resolved.
+2. Before the app is deployed to production, the CI/CD pipeline uploads the BOM directly to Dependency-Track, for example for `WeatherApiService` version `1.2.3`.
+  - The project becomes available in Dependency-Track, vulnerability and license analysis are performed, and notifications are triggered if configured.
+3. After step 2, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`.
+  - Analysis results are evaluated. If any Critical or High findings exist, the service fails, which causes the pipeline to fail. That prevents deployment until the issues are resolved.
 4. When step 3 succeeds, then the WeatherApiService is actually deployed to the PROD environment.
-5. After step 4, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 4 phases.
+5. After step 4, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`. The helper service executes four phases.
    - The new version becomes active and latest is set.
    - A Parent project is created if needed, and the relation is set.
    - Older versions are deactivated (with the same application name).
@@ -45,15 +45,15 @@ A minimal ASP.NET Core API automates Dependency-Track project lifecycle operatio
 
 ## Dependency-Track Helper API details
 
-The API automates Dependency-Track project lifecycle operations for versioned applications. The API is designed to be called from CI/CD pipelines after uploading a BOM to Dependency-Track, so it can manage project versions with a single operation. For this demo, the API call for step 3 is not implemented.
+The API automates Dependency-Track project lifecycle operations for versioned applications. It is designed to be called from CI/CD pipelines after uploading a BOM to Dependency-Track, so it can manage project versions through a single operation. For this demo, the pre-deployment validation call from step 3 is not implemented.
 
 The Dependency-Track Helper application is located in the `dth` folder. Dependency-Track supports project and version management through its REST API, but recurring release lifecycle tasks are operational work. This API wraps those tasks into one endpoint so pipelines can call a single operation.
 
 1. The CI/CD pipeline creates a BOM when the application is built.
-2. Before the app will be deployed to prod, the CI/CD pipeline uploads the BOM directly to Dependency-Track, e.g for WeatherApiService version 1.2.3.
-   - The project is usable in Dependency-Track, vulnerability and license analysis will be done, the results are visible in Dependency-Track. Notifications are triggered if configured.
+2. Before the app is deployed to production, the CI/CD pipeline uploads the BOM directly to Dependency-Track, for example for `WeatherApiService` version `1.2.3`.
+  - The project is available in Dependency-Track, vulnerability and license analysis run, and notifications are triggered if configured.
 3. Then the WeatherApiService is actually deployed to the PROD environment.
-4. After step 3, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 4 phases.
+4. After step 3, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`. The helper service executes four phases.
    - The new version becomes active and latest is set.
    - A Parent project is created if needed, and the relation is set.
    - Older versions are deactivated (with the same application name).
@@ -61,7 +61,7 @@ The Dependency-Track Helper application is located in the `dth` folder. Dependen
 
 ![CI/CD pipeline use case infographic](assets/image-9.png)
 
-> **Note**: This demo does not contain the pre-deployment-gate with the validation check code, you can do this by your self.
+> **Note**: This demo does not include the pre-deployment gate with validation check code. You can add this yourself.
 
 ### Tech stack
 
@@ -314,20 +314,15 @@ When you change the level of the `License - Weak Copyleft` policy violation to `
 
 This concludes the integration improvements. Project maintenance is now automated, so you can focus on SBOM quality and policy management to improve risk visibility. You can further customize helper API behavior.
 
-Beside that, you can test and experiment with Dependency-Track features, such as:
+Besides that, you can test and experiment with Dependency-Track features, such as:
 
 - Notifications and integrations with Jira, Slack, Teams, etc.
   - Tip enabling notifications is a must, but you could overflow your team with alerts.
-- User management and authentication providers
-  - For any organisdation, this is a must. and it is easy to configure.
-- Policy management and custom policies improvements
-  - Experiment with this and you will find a configuration that fits your organisation.
-- Exploitability Context (VEX) documents to suppress known vulnerabilities in SBOMs
-  - Some vulnerabilities are known to be not exploitable in your environment. You can suppress these in Dependency-Track with VEX documents.
-- Improved License deduction to reduce unknown licenses and false positives.
-  - A solution i tested was instead of directly uploading the SBOM to Dependency-Track, first push it to the Helper API, and do some license deduction with static information. But, this leads to a external configuration place with static information needed, which needs to be updated once and a while, which is not ideal. So, this is a trade-off between false positives and external configuration.
-- DevOps pipeline improvements, such as SBOM validation and pipeline failing.
-  - Steps you should consider to improve the solution.
+- User management and authentication providers: For any organization, this is essential and relatively easy to configure.
+- Policy management and custom policy improvements: Experiment with this to find a configuration that matches your organization.
+- Exploitability Context (VEX) documents to suppress known vulnerabilities in SBOMs: Some vulnerabilities are known to be non-exploitable in your environment.
+- Improved license deduction to reduce unknown licenses and false positives: One approach is to route SBOMs through the Helper API and enrich license metadata before upload, but this introduces external static configuration that must be maintained.
+- DevOps pipeline improvements, such as SBOM validation and fail-fast gates.
 
 As earlier mentioned, you can improve the deployment of Dependency-Track and harden the security of the solution.
 
