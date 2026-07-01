@@ -2,26 +2,15 @@
 
 See [../30-dependency-track/README-implementation.md](../30-dependency-track/README-implementation.md) for the previous guide.
 
-This section describes an opinionated improvement introduced to make the solution more manageable, based on an implementation done at a customer.
+This guide describes an opinionated improvement introduced to make the solution more manageable, based on an implementation done at a customer. The guide is split into two sections:
 
-- [Dependency-Track Helper API](#dependency-track-helper-api)
-  - [The problem](#the-problem)
-    - [Proposed solution](#proposed-solution)
-      - [Typical use case](#typical-use-case)
-    - [The helper application](#the-helper-application)
-  - [Steps](#steps)
-    - [Dependency-Track Helper pipeline](#dependency-track-helper-pipeline)
-    - [Dependency-Track modification](#dependency-track-modification)
-    - [Pipeline Variable group](#pipeline-variable-group)
-    - [Demo App Pipeline Modification](#demo-app-pipeline-modification)
-      - [Build](#build)
-      - [Deploy](#deploy)
-  - [Dependency-Track Clean view](#dependency-track-clean-view)
-  - [Conclusion](#conclusion)
+- Start with [The Dependency-Track Helper API case](#the-dependency-track-helper-api-case) for the problem description and the proposed solution.
+- The next section [Dependency-Track Helper API details](#dependency-track-helper-api-details) describe the inner workings and implementation of the API.
+- The last section [Dependency-Track Helper Implementation](#dependency-track-helper-implementation) describe the implementation of the API and the changes needed in the demo application pipeline to use the API.
 
----
+## The Dependency-Track Helper API case
 
-## The problem
+### The problem
 
 When a build pipeline runs frequently, Dependency-Track accumulates a project version entry for every build. Most of these versions are no longer deployed anywhere and are not relevant to current risk. Over time this clutters the project list and creates noise around vulnerabilities in versions that are not in production.
 
@@ -54,15 +43,150 @@ A minimal ASP.NET Core API automates Dependency-Track project lifecycle operatio
 
 ![CI/CD pipeline use case infographic](assets/image-9.png)
 
-### The helper application
+## Dependency-Track Helper API details
 
 The API automates Dependency-Track project lifecycle operations for versioned applications. The API is designed to be called from CI/CD pipelines after uploading a BOM to Dependency-Track, so it can manage project versions with a single operation. For this demo, the API call for step 3 is not implemented.
 
-The Dependency-Track Helper application is located in the `dth` folder. See [README-design.md](README-design.md) for architecture and implementation details.
+The Dependency-Track Helper application is located in the `dth` folder. Dependency-Track supports project and version management through its REST API, but recurring release lifecycle tasks are operational work. This API wraps those tasks into one endpoint so pipelines can call a single operation.
+
+1. The CI/CD pipeline creates a BOM when the application is built.
+2. Before the app will be deployed to prod, the CI/CD pipeline uploads the BOM directly to Dependency-Track, e.g for WeatherApiService version 1.2.3.
+   - The project is usable in Dependency-Track, vulnerability and license analysis will be done, the results are visible in Dependency-Track. Notifications are triggered if configured.
+3. Then the WeatherApiService is actually deployed to the PROD environment.
+4. After step 3, the CI/CD pipeline calls this Helper API for WeatherApiService /1.2.3. The helper service will do 4 phases.
+   - The new version becomes active and latest is set.
+   - A Parent project is created if needed, and the relation is set.
+   - Older versions are deactivated (with the same application name).
+   - Older versions are optionally pruned (with the same application name)
+
+![CI/CD pipeline use case infographic](assets/image-9.png)
+
+> **Note**: This demo does not contain the pre-deployment-gate with the validation check code, you can do this by your self.
+
+### Tech stack
+
+Minimal ASP.NET Core API that automates Dependency-Track project lifecycle operations for versioned applications.
+
+- .NET net10.0 minimal API
+- Typed repository layer for Dependency-Track HTTP calls
+- Explicit process context propagation for API key
+- Structured logging with process-phase messages
+
+### API contract
+
+#### Health endpoint
+
+- Method: GET
+- Path: /health
+- No authentication required
+
+Returns `200 OK` with `{ "status": "ok" }`.
+
+#### Project process endpoint
+
+- Method: POST
+- Path: /api/v1/projectprocess
+- Required header: X-Api-Key
+
+The API key is forwarded to Dependency-Track for upstream calls.
+
+#### Request body
+
+The endpoint accepts `ProjectProcessRequestDto` with these JSON fields:
+
+- projectName (string, required)
+- version (string, required)
+- activateVersion (bool, optional)
+- cleanInactiveProjects (int, optional)
+- parentName (string, optional)
+
+#### Behavior details
+
+When the endpoint is called:
+
+1. Parent resolution
+     - If parentName is provided, parent lookup is executed in Dependency-Track.
+     - If not found, a parent project is created.
+
+2. Target activation
+     - Target project is looked up by projectName + version.
+     - Target is updated to active = true and isLatest = true.
+     - If parent is resolved, parent relation is applied.
+
+3. Sibling deactivation
+     - Other projects with the same name are updated to active = false and isLatest = false.
+
+4. Cleanup
+     - Inactive versions are sorted by lastBomImport desc, then version desc.
+     - If cleanInactiveProjects is missing or <= 0, deletion is skipped.
+     - Otherwise, only the newest cleanInactiveProjects inactive versions are retained.
+     - Older inactive versions are deleted.
+
+#### Success response
+
+Returns 200 OK with:
+
+```json
+{
+    "projectUuid": "3c570e4a-8d5b-4a3a-9f8c-a4ed7a4f2d9a",
+    "projectName": "my-app",
+    "version": "1.2.3",
+    "active": true,
+    "isLatest": true,
+    "parentUuid": "f7cb4a8b-33d2-49e8-a622-f90a2fae612d",
+    "deactivatedCount": 4,
+    "deletedInactiveCount": 2
+}
+```
+
+#### Error responses
+
+- 400 Bad Request: missing or invalid request body values
+- 401 Unauthorized: missing X-Api-Key
+- 404 Not Found: target project version does not exist in Dependency-Track
+- 500 Internal Server Error: local configuration or processing failure
+- 502 Bad Gateway: Dependency-Track request failed upstream
 
 ---
 
-## Steps
+### Configuration
+
+Configuration key:
+
+```json
+{
+    "DependencyTrack": {
+        "BaseUrl": "https://your-dependency-track-host"
+    }
+}
+```
+
+Files:
+
+- appsettings.json
+
+The application loads configuration from the configuration file and environment variables.
+
+Set nested values with double underscores, for example:
+
+- DependencyTrack__BaseUrl=<https://your-dependency-track-host>
+
+---
+
+### Example requests
+
+cURL:
+
+```bash
+curl -X POST `
+    "https://dtdevsubql3-api.purplepond-38abd33f.northeurope.azurecontainerapps.io/api/v1/projectprocess" `
+    -H 'X-Api-Key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' `
+    -H "Content-Type: application/json" `
+    -d '{ "projectName": "WeatherApiService-backend", "version": "0.51.0-pbi.27", "activateVersion": true, "cleanInactiveProjects": 3, "parentName": "WeatherApiService" }'    `
+    --verbose --show-headers --ssl-no-revoke
+```
+
+## Dependency-Track Helper Implementation
 
 ### Dependency-Track Helper pipeline
 
@@ -84,7 +208,7 @@ If you forget this step, the helper API will not be able to perform project life
 
 > **Note**: This permission is required for the API key to perform project lifecycle management operations. It is not needed for basic SBOM upload and vulnerability checks. For security best practices, consider creating a separate API key with only the necessary permissions for the helper service. You have to change the helper app implementation to use the new API key if you go this route.
 
-### Pipeline Variable group
+### Pipeline Variable group modifications
 
 Add one variable to the existing **`DependencyTrackGroup`** variable group:
 
@@ -92,9 +216,7 @@ Add one variable to the existing **`DependencyTrackGroup`** variable group:
 | --- | --- |
 | `DependencyTrackHelperUrl` | Base URL of the Dependency-Track Helper API, e.g. `https://<baseName>-dth.<region>.azurecontainerapps.io` |
 
-### Demo App Pipeline Modification
-
-#### Build
+### Demo App Pipeline modifications
 
 Remove the previous template `demo/pipeline/templates/application/tasks/build-create-and-upload-sbom.yml` and replace it with `demo/pipeline/templates/application/tasks/build-create-sbom.yml`, which only creates the SBOM. See [./assets/build-create-sbom.yml](./assets/build-create-sbom.yml) for the full template content.
 
@@ -130,8 +252,6 @@ Then edit the existing `demo/pipeline/templates/application/build-frontend-job.y
 
 ![Pipeline modification backend](./assets/image-1.png)
 
-#### Deploy
-
 Because the SBOM is no longer uploaded during build, the deploy step should perform the upload.
 
 First, add a reusable SBOM upload template named `demo/pipeline/templates/application/tasks/deploy-upload-sbom.yml`. See [./assets/deploy-upload-sbom.yml](./assets/deploy-upload-sbom.yml) for the full template content.
@@ -164,7 +284,7 @@ Then we edit the existing `demo/pipeline/templates/application/deploy-environmen
 
 Save and commit the changes. Then push a new commit to `main`/`master` to trigger the pipeline and review the results in Dependency-Track.
 
-## Dependency-Track Clean view
+### Dependency-Track end results
 
 Open the Dependency-Track UI and go to the main dashboard. This overview shows current software risk based on uploaded SBOMs and configured policies. In this example, one project is marked high risk and one medium risk, which gives a clearer signal than the previous approach.
 
@@ -187,6 +307,8 @@ If you fix the identified issues in the demo code, you can end up with a clean D
 When you change the level of the `License - Weak Copyleft` policy violation to `Info`, you can see that all issues will be resolved and the project is in a healthy state.
 
 ![Dependency Track projects issues fixed](./assets/image-11.png)
+
+---
 
 ## Conclusion
 
