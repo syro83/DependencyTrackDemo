@@ -31,11 +31,15 @@ A minimal ASP.NET Core API automates Dependency-Track project lifecycle operatio
 
 1. The CI/CD pipeline creates a BOM when the application is built.
 2. Before the app is deployed to production, the CI/CD pipeline uploads the BOM directly to Dependency-Track, for example for `WeatherApiService` version `1.2.3`.
-  - The project becomes available in Dependency-Track, vulnerability and license analysis are performed, and notifications are triggered if configured.
+
+- The project becomes available in Dependency-Track, vulnerability and license analysis are performed, and notifications are triggered if configured.
+
 3. After step 2, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`.
-  - Analysis results are evaluated. If any Critical or High findings exist, the service fails, which causes the pipeline to fail. That prevents deployment until the issues are resolved.
+
+- Analysis results are evaluated. If any Critical or High findings exist, the service fails, which causes the pipeline to fail. That prevents deployment until the issues are resolved.
+
 4. When step 3 succeeds, then the WeatherApiService is actually deployed to the PROD environment.
-5. After step 4, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`. The helper service executes four phases.
+2. After step 4, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`. The helper service executes four phases.
    - The new version becomes active and latest is set.
    - A Parent project is created if needed, and the relation is set.
    - Older versions are deactivated (with the same application name).
@@ -51,9 +55,11 @@ The Dependency-Track Helper application is located in the `dth` folder. Dependen
 
 1. The CI/CD pipeline creates a BOM when the application is built.
 2. Before the app is deployed to production, the CI/CD pipeline uploads the BOM directly to Dependency-Track, for example for `WeatherApiService` version `1.2.3`.
-  - The project is available in Dependency-Track, vulnerability and license analysis run, and notifications are triggered if configured.
+
+- The project is available in Dependency-Track, vulnerability and license analysis run, and notifications are triggered if configured.
+
 3. Then the WeatherApiService is actually deployed to the PROD environment.
-4. After step 3, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`. The helper service executes four phases.
+2. After step 3, the CI/CD pipeline calls this Helper API for `WeatherApiService` version `1.2.3`. The helper service executes four phases.
    - The new version becomes active and latest is set.
    - A Parent project is created if needed, and the relation is set.
    - Older versions are deactivated (with the same application name).

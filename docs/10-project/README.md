@@ -402,4 +402,3 @@ After evaluating all tools against the criteria defined in Section 4.1 and the a
 ## Next guide
 
 Continue with the demo application pipeline walkthrough in [../20-demo-application/README.md](../20-demo-application/README.md).
-
